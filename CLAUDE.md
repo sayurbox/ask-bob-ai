@@ -10,21 +10,30 @@ Bob AI CLI is a Visual Studio Code extension that enhances productivity when wor
 
 ### Core Components
 
-- **Four Main Commands**:
+- **Eight Main Commands**:
   - `ask-ai-cli.copyCodeBlock` - Copy code reference to clipboard
   - `ask-ai-cli.sendToTerminal` - Send code reference to AI CLI terminal
   - `ask-ai-cli.quickActions` - Template-based prompt actions
   - `ask-ai-cli.customPrompt` - User-defined custom prompts
-- **Lazy Activation**: Extension only activates when commands are called (no startup overhead)
-- **Pure JavaScript Implementation**: No build process required, uses `src/extension.js` directly
-- **Smart Terminal Detection**: Auto-detects Claude Code/AI CLI terminals and can auto-start if needed
+  - `ask-ai-cli.copyAndAskAI` - Copy text then prompt workflow
+  - `ask-ai-cli.startAICLI` - Launch AI CLI picker
+  - `ask-ai-cli.addFeature` - Guided tech spec creation workflow (NEW)
+  - `ask-ai-cli.executePlan` - Smart plan execution from .md files or code selection (NEW)
+- **Terminal Lifecycle Management**: Tracks AI CLI terminals and auto-detects when closed/killed
+- **Required AI CLI**: All commands now enforce that an AI CLI must be running before execution
+- **Pure JavaScript Implementation**: No build process required, modular architecture
+- **Smart Terminal Detection**: Auto-detects Claude Code/AI CLI terminals, blocks if not running
 
 ### Key Files
 
-- `src/extension.js` - Main extension logic with all command handlers and terminal management
+- `src/extension.js` - Extension entry point with terminal listeners
+- `src/commands/` - Modular command handlers (8 command files)
+- `src/services/terminal-manager.js` - Terminal lifecycle tracking and validation
+- `src/services/cli-detector.js` - AI CLI detection logic
+- `src/utils/` - Code reference generation and path utilities
+- `src/config/ai-clis.js` - AI CLI configurations and templates
 - `package.json` - Extension manifest with command registration and menu integration
 - `icon.png` - Extension icon
-- `test.js` - Sample file for testing functionality
 
 ## Development Commands
 
@@ -109,7 +118,14 @@ Since F5 debug mode may not work on all systems, the extension includes comprehe
   - `sendToTerminal` - Send reference only
   - `quickActions` - Template prompts
   - `customPrompt` - User input prompt
+  - `copyAndAskAI` - Copy then ask workflow
+  - `startAICLI` - Launch AI CLI
+  - `addFeature` - Tech spec creation workflow (NEW)
+  - `executePlan` - Execute plan from .md or selection (NEW)
+- **Terminal Management**: All commands that send to terminal require AI CLI to be running
+- **Context Menu Integration**: Commands available in editor and explorer (for .md files)
 - **Cross-Platform**: Path separators normalized to forward slashes
 - **Minimal Dependencies**: Pure JavaScript implementation with no external runtime dependencies
 - **VS Code Version**: Supports VS Code 1.74.0 and later
 - **Template System**: Pre-built prompt templates in `QUICK_ACTIONS` constant
+- **Modular Architecture**: Separated into commands/, services/, utils/, config/, providers/

@@ -43,9 +43,24 @@
       {
         "command": "ask-ai-cli.executeQuickAction",
         "title": "Bob AI: Execute Quick Action"
+      },
+      {
+        "command": "ask-ai-cli.addFeature",
+        "title": "Bob AI: Add Feature"
+      },
+      {
+        "command": "ask-ai-cli.executePlan",
+        "title": "Bob AI: Execute Plan"
       }
     ],
     "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .md",
+          "command": "ask-ai-cli.executePlan",
+          "group": "askAiCli@1"
+        }
+      ],
       "editor/context": [
         {
           "when": "editorHasSelection",
@@ -75,6 +90,15 @@
           "when": "editorHasSelection",
           "command": "ask-ai-cli.copyCodeBlock",
           "group": "askAiCli@6"
+        },
+        {
+          "command": "ask-ai-cli.addFeature",
+          "group": "askAiCli@7"
+        },
+        {
+          "when": "resourceExtname == .md || editorHasSelection",
+          "command": "ask-ai-cli.executePlan",
+          "group": "askAiCli@8"
         }
       ],
       "commandPalette": [
@@ -100,6 +124,12 @@
         },
         {
           "command": "ask-ai-cli.startAICLI"
+        },
+        {
+          "command": "ask-ai-cli.addFeature"
+        },
+        {
+          "command": "ask-ai-cli.executePlan"
         }
       ]
     }

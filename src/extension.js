@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const { registerCommands } = require('./commands');
 const { AICodeActionProvider } = require('./providers/code-action-provider');
+const { setupTerminalListeners } = require('./services/terminal-manager');
 
 /**
  * Activate the extension
@@ -8,6 +9,10 @@ const { AICodeActionProvider } = require('./providers/code-action-provider');
  */
 function activate(context) {
     console.log('Bob AI CLI extension is now active!');
+
+    // Setup terminal lifecycle listeners (auto-detect when AI CLI is closed/killed)
+    setupTerminalListeners(context);
+    console.log('Terminal listeners registered');
 
     // Register Code Action Provider for inline suggestions (lightbulb)
     const codeActionProvider = vscode.languages.registerCodeActionsProvider(

@@ -23,10 +23,12 @@ Bob AI is a powerful VS Code extension that bridges the gap between your code ed
 ### Why Bob AI?
 
 - **⚡ Lightning Fast** - Select code, right-click, get AI help instantly
-- **🎯 Smart Detection** - Auto-detects running AI CLI sessions
+- **🎯 Smart Detection** - Auto-detects running AI CLI sessions and terminal lifecycle
 - **🔧 Flexible** - Works with Claude Code, Gemini CLI, and any terminal-based AI
 - **📦 Zero Configuration** - Works out of the box with sensible defaults
 - **🎨 Template System** - 8 pre-built prompt templates for common tasks
+- **📋 Tech Spec Workflow** - Guided feature planning with research and implementation phases
+- **🔒 Terminal Management** - Enforces AI CLI requirements and tracks terminal state
 - **✨ Pure JavaScript** - No build process, no dependencies
 
 ---
@@ -75,6 +77,40 @@ Start any AI CLI directly from VS Code:
 - Detects installed CLIs (Claude Code, Gemini)
 - Provides a picker for easy selection
 - Supports custom AI CLI commands
+- **Required** - All commands now require an AI CLI to be running first
+
+### 7. 📋 Add Feature (Tech Spec Workflow)
+Guided workflow to add new features with proper planning:
+
+**Phase 1: Research & Tech Spec**
+1. Right-click or use Command Palette → `Bob AI: Add Feature`
+2. Answer guided questions:
+   - Feature name
+   - Problem/context
+   - Requirements
+   - Include selected code (optional)
+3. Bob AI researches codebase and creates tech spec in `/research/research-{feature}.md`
+4. Review and iterate on the tech spec
+
+**Phase 2: Implementation** (See Execute Plan below)
+
+### 8. ⚙️ Execute Plan (Smart Implementation)
+Execute implementation plans with intelligent context detection:
+
+**Three ways to use:**
+
+1. **Right-click .md file in Explorer** → Implement from tech spec file
+2. **Open .md file in editor** → Implement from current tech spec
+3. **Select code in any file** → Use selection as inline plan
+
+Bob AI follows the plan, creates/modifies files, and tracks progress.
+
+### 9. 🔒 Terminal Management
+**Automatic AI CLI Detection:**
+- Blocks commands if no AI CLI is running
+- Auto-detects when AI CLI terminal is closed
+- Tracks terminal lifecycle events
+- Forces proper AI CLI usage for better reliability
 
 ---
 
@@ -151,6 +187,34 @@ def calculate_total(items):
 # Bob AI sends: "Add type hints and error handling @src/calculator.py#L2-3"
 ```
 
+### Example: Add Feature Workflow
+
+```javascript
+// Complete workflow for adding a new feature
+
+// Step 1: Start the workflow
+// Right-click anywhere → Bob AI: Add Feature
+
+// Step 2: Answer guided questions
+// Q: What feature? → "dark mode toggle"
+// Q: Problem? → "Users need theme support"
+// Q: Requirements? → "Use CSS variables, support system theme"
+
+// Step 3: Bob AI creates tech spec
+// File created: /research/research-dark-mode.md
+// Contains:
+// - Problem statement
+// - Proposed solution
+// - Architecture design
+// - Implementation steps
+// - Testing strategy
+
+// Step 4: Review and execute
+// Right-click research-dark-mode.md in Explorer
+// → Bob AI: Execute Plan
+// Bob AI implements the feature following the spec!
+```
+
 ---
 
 ## 📚 Available Commands
@@ -163,6 +227,8 @@ def calculate_total(items):
 | `Bob AI: Copy Code Reference` | Copy to clipboard | *Not set* |
 | `Bob AI: Start AI CLI` | Launch an AI CLI | *Not set* |
 | `Bob AI: Copy & Ask AI` | Copy text + choose action | *Not set* |
+| `Bob AI: Add Feature` | Guided tech spec creation | *Not set* |
+| `Bob AI: Execute Plan` | Implement from tech spec/plan | *Not set* |
 
 **Tip:** Set custom keyboard shortcuts via `File > Preferences > Keyboard Shortcuts`
 
@@ -230,9 +296,11 @@ bob-ai-cli-extension/
 │   │   ├── send-to-terminal.js
 │   │   ├── quick-actions.js
 │   │   ├── custom-prompt.js
-│   │   └── copy-and-ask.js
+│   │   ├── copy-and-ask.js
+│   │   ├── add-feature.js        # NEW: Tech spec creation
+│   │   └── execute-plan.js       # NEW: Smart plan execution
 │   ├── services/                 # Business logic
-│   │   ├── terminal-manager.js
+│   │   ├── terminal-manager.js   # Terminal lifecycle tracking
 │   │   └── cli-detector.js
 │   ├── utils/                    # Utilities
 │   │   ├── code-reference.js
@@ -287,6 +355,14 @@ vsce package
 
 ## 🎯 Roadmap
 
+**Completed:**
+- [x] Tech spec workflow with Add Feature command
+- [x] Smart Execute Plan with multi-context support
+- [x] Terminal lifecycle tracking and auto-detection
+- [x] Explorer context menu integration
+- [x] Required AI CLI enforcement
+
+**Upcoming:**
 - [ ] VS Code Marketplace publication
 - [ ] Keyboard shortcut defaults
 - [ ] Configuration settings UI
@@ -295,6 +371,7 @@ vsce package
 - [ ] Multi-file code references
 - [ ] Code snippet history
 - [ ] AI response preview in editor
+- [ ] Tech spec templates library
 
 ---
 

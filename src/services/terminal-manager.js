@@ -2,12 +2,42 @@ const vscode = require('vscode');
 const { AI_CLIS } = require('../config/ai-clis');
 const { detectInstalledCLIs } = require('./cli-detector');
 
+// Track AI CLI terminals we've started
+const trackedAITerminals = new Set();
+
+/**
+ * Setup terminal lifecycle listeners
+ * @param {vscode.ExtensionContext} context - Extension context
+ */
+function setupTerminalListeners(context) {
+    // Listen for terminal close events
+    const closeListener = vscode.window.onDidCloseTerminal(terminal => {
+        if (trackedAITerminals.has(terminal)) {
+            console.log(`AI CLI terminal closed: ${terminal.name}`);
+            trackedAITerminals.delete(terminal);
+        }
+    });
+
+    context.subscriptions.push(closeListener);
+}
+
 /**
  * Find AI CLI terminal (Claude Code, Gemini, etc.)
  * @returns {vscode.Terminal|null} Found terminal or null
  */
 function findAITerminal() {
     const terminals = vscode.window.terminals;
+
+    // First, check tracked terminals (ones we started)
+    for (const terminal of trackedAITerminals) {
+        // Verify terminal still exists in VS Code
+        if (terminals.includes(terminal)) {
+            return terminal;
+        } else {
+            // Clean up dead reference
+            trackedAITerminals.delete(terminal);
+        }
+    }
 
     // First, look for terminals with known AI CLI identifiers
     let aiTerminal = terminals.find(terminal => {
@@ -44,6 +74,9 @@ async function startAICLI(cliConfig) {
         name: cliConfig.terminalName,
         hideFromUser: false
     });
+
+    // Track this terminal
+    trackedAITerminals.add(terminal);
 
     // Show the terminal
     terminal.show();
@@ -161,63 +194,63 @@ function isObviousAITerminal(terminal) {
 }
 
 /**
- * Send text to AI CLI terminal, with option to start if not found
+ * Send text to AI CLI terminal, blocks if no AI CLI is running
  * @param {string} text - Text to send to terminal
  * @returns {Promise<boolean>} True if sent successfully, false otherwise
  */
 async function sendToAITerminal(text) {
     let aiTerminal = findAITerminal();
 
-    // Check if we're using a fallback terminal (not an obvious AI terminal)
-    const isObviousAI = isObviousAITerminal(aiTerminal);
-
-    // If no obvious AI terminal found, ask to start AI CLI
-    if (!isObviousAI) {
-        const message = aiTerminal
-            ? 'No AI CLI terminal detected. Start an AI CLI in a new terminal?'
-            : 'No terminal found. Start an AI CLI?';
-
-        const answer = await vscode.window.showInformationMessage(
-            message,
-            'Yes, start AI CLI',
-            'Use current terminal',
-            'Cancel'
-        );
-
-        if (answer === 'Yes, start AI CLI') {
-            aiTerminal = await showAICLIPicker();
-            if (!aiTerminal) {
-                return false;
-            }
-        } else if (answer === 'Use current terminal') {
-            // Use the existing terminal (fallback for other AI CLIs)
-            if (!aiTerminal) {
-                vscode.window.showErrorMessage('No terminal available');
-                return false;
-            }
-        } else {
-            return false;
+    // Validate terminal still exists in VS Code
+    if (aiTerminal) {
+        const allTerminals = vscode.window.terminals;
+        if (!allTerminals.includes(aiTerminal)) {
+            // Terminal was closed, clean up
+            trackedAITerminals.delete(aiTerminal);
+            aiTerminal = null;
         }
     }
 
-    // Show the terminal first to make it visible
-    aiTerminal.show();
+    // Check if we're using a fallback terminal (not an obvious AI terminal)
+    const isObviousAI = isObviousAITerminal(aiTerminal);
 
-    // Send the text
-    aiTerminal.sendText(text);
+    // Block action if no obvious AI CLI terminal found
+    if (!isObviousAI) {
+        const answer = await vscode.window.showErrorMessage(
+            'No AI CLI (Claude Code, Gemini, etc.) is running. Please start an AI CLI first.',
+            'Start AI CLI Now'
+        );
 
-    // Update the flag after potentially starting AI CLI
-    const isFinalAITerminal = isObviousAITerminal(aiTerminal);
+        if (answer === 'Start AI CLI Now') {
+            // Open command palette to start AI CLI
+            vscode.commands.executeCommand('ask-ai-cli.startAICLI');
+        }
 
-    if (isFinalAITerminal) {
-        vscode.window.showInformationMessage('Sent to AI CLI terminal');
-    } else {
-        vscode.window.showInformationMessage('Sent to active terminal');
+        return false; // Block the action
     }
-    return true;
+
+    try {
+        // Show the terminal first to make it visible
+        aiTerminal.show();
+
+        // Send the text
+        aiTerminal.sendText(text);
+
+        vscode.window.showInformationMessage('Sent to AI CLI terminal');
+        return true;
+    } catch (error) {
+        // If sending fails, terminal might be dead - clean up
+        trackedAITerminals.delete(aiTerminal);
+
+        vscode.window.showErrorMessage(
+            'Failed to send to terminal. The AI CLI may have been closed. Please start a new one.'
+        );
+        return false;
+    }
 }
 
 module.exports = {
+    setupTerminalListeners,
     findAITerminal,
     findClaudeCodeTerminal: findAITerminal, // Backward compatibility alias
     startAICLI,

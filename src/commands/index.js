@@ -4,6 +4,8 @@ const { sendToTerminalCommand } = require('./send-to-terminal');
 const { quickActionsCommand, executeQuickActionCommand } = require('./quick-actions');
 const { customPromptCommand } = require('./custom-prompt');
 const { copyAndAskAICommand } = require('./copy-and-ask');
+const { addFeatureCommand } = require('./add-feature');
+const { executePlanCommand } = require('./execute-plan');
 const { showAICLIPicker } = require('../services/terminal-manager');
 
 /**
@@ -58,6 +60,18 @@ function registerCommands(context) {
         }
     );
 
+    // Add Feature (Phase 1: Create tech spec)
+    const addFeature = vscode.commands.registerCommand(
+        'ask-ai-cli.addFeature',
+        addFeatureCommand
+    );
+
+    // Execute Plan (Phase 2: Implement from tech spec)
+    const executePlan = vscode.commands.registerCommand(
+        'ask-ai-cli.executePlan',
+        executePlanCommand
+    );
+
     // Add all commands to subscriptions
     context.subscriptions.push(
         copyCodeBlock,
@@ -66,7 +80,9 @@ function registerCommands(context) {
         customPrompt,
         copyAndAskAI,
         executeQuickAction,
-        startAICLI
+        startAICLI,
+        addFeature,
+        executePlan
     );
 }
 
