@@ -1,0 +1,113 @@
+{
+  "name": "bob-ai-cli",
+  "displayName": "Bob AI CLI",
+  "description": "Smart code assistant for Claude Code and other AI CLIs - copy code references, send to terminal, and use quick action templates",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "icon": "icon.png",
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ask-ai-cli.startAICLI",
+        "title": "Bob AI: Start AI CLI"
+      },
+      {
+        "command": "ask-ai-cli.copyCodeBlock",
+        "title": "Bob AI: Copy Code Reference"
+      },
+      {
+        "command": "ask-ai-cli.sendToTerminal",
+        "title": "Bob AI: Send to Terminal"
+      },
+      {
+        "command": "ask-ai-cli.customPrompt",
+        "title": "Bob AI: Custom Prompt"
+      },
+      {
+        "command": "ask-ai-cli.quickActions",
+        "title": "Bob AI: Quick Actions"
+      },
+      {
+        "command": "ask-ai-cli.copyAndAskAI",
+        "title": "Bob AI: Copy & Ask AI"
+      },
+      {
+        "command": "ask-ai-cli.executeQuickAction",
+        "title": "Bob AI: Execute Quick Action"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorHasSelection",
+          "command": "ask-ai-cli.quickActions",
+          "group": "askAiCli@1"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "ask-ai-cli.customPrompt",
+          "group": "askAiCli@2"
+        },
+        {
+          "command": "ask-ai-cli.startAICLI",
+          "group": "askAiCli@3"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "ask-ai-cli.copyAndAskAI",
+          "group": "askAiCli@4"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "ask-ai-cli.sendToTerminal",
+          "group": "askAiCli@5"
+        },
+        {
+          "when": "editorHasSelection",
+          "command": "ask-ai-cli.copyCodeBlock",
+          "group": "askAiCli@6"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ask-ai-cli.copyCodeBlock",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.sendToTerminal",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.quickActions",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.customPrompt",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.copyAndAskAI",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.startAICLI"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "node check-node-modules.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0"
+  }
+}

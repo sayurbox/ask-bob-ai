@@ -1,0 +1,39 @@
+const vscode = require('vscode');
+const { generateCodeReference } = require('../utils/code-reference');
+const { sendToAITerminal } = require('../services/terminal-manager');
+
+/**
+ * Command handler for sending code reference to terminal
+ */
+async function sendToTerminalCommand() {
+    const editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
+        vscode.window.showErrorMessage('No active editor found');
+        return;
+    }
+
+    const selection = editor.selection;
+
+    if (selection.isEmpty) {
+        vscode.window.showErrorMessage('Please select a code block first');
+        return;
+    }
+
+    const output = generateCodeReference(editor);
+
+    if (!output) {
+        vscode.window.showErrorMessage('Failed to generate code reference');
+        return;
+    }
+
+    // Add trailing backslash for multi-line input in terminal
+    const terminalText = `${output} \\`;
+
+    // Send to AI CLI terminal
+    await sendToAITerminal(terminalText);
+}
+
+module.exports = {
+    sendToTerminalCommand
+};

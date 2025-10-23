@@ -1,0 +1,29 @@
+{
+  "name": "copy-susu",
+  "displayName": "Copy Susu",
+  "description": "Copy file path with line numbers to clipboard",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onCommand:copy-susu.copyCodeBlock"],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copy-susu.copyCodeBlock",
+        "title": "Copy this codes block"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorHasSelection",
+          "command": "copy-susu.copyCodeBlock",
+          "group": "navigation"
+        }
+      ]
+    }
+  }
+}
