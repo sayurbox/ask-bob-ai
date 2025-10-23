@@ -3,6 +3,10 @@
   "displayName": "Bob AI CLI",
   "description": "Smart code assistant for Claude Code and other AI CLIs - copy code references, send to terminal, and use quick action templates",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sayurbox/ask-bob-ai.git"
+  },
   "engines": {
     "vscode": "^1.74.0"
   },
