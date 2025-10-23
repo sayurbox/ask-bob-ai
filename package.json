@@ -51,6 +51,44 @@
       {
         "command": "ask-ai-cli.executePlan",
         "title": "Bob AI: Execute Plan"
+      },
+      {
+        "command": "ask-ai-cli.folderExplain",
+        "title": "📖 Explain This"
+      },
+      {
+        "command": "ask-ai-cli.folderReview",
+        "title": "🔍 Review Code"
+      },
+      {
+        "command": "ask-ai-cli.folderFindBugs",
+        "title": "🐛 Find Bugs"
+      },
+      {
+        "command": "ask-ai-cli.folderGenerateTests",
+        "title": "✅ Generate Tests"
+      },
+      {
+        "command": "ask-ai-cli.folderDocument",
+        "title": "📝 Add Documentation"
+      },
+      {
+        "command": "ask-ai-cli.folderRefactor",
+        "title": "♻️ Refactor"
+      },
+      {
+        "command": "ask-ai-cli.folderListFiles",
+        "title": "📂 Show Structure"
+      },
+      {
+        "command": "ask-ai-cli.folderOperations",
+        "title": "Bob AI: Folder Operations"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "askAiCli.folder",
+        "label": "Bob AI: Actions"
       }
     ],
     "menus": {
@@ -59,6 +97,40 @@
           "when": "resourceExtname == .md",
           "command": "ask-ai-cli.executePlan",
           "group": "askAiCli@1"
+        },
+        {
+          "submenu": "askAiCli.folder",
+          "group": "askAiCli@2"
+        }
+      ],
+      "askAiCli.folder": [
+        {
+          "command": "ask-ai-cli.folderExplain",
+          "group": "1_actions"
+        },
+        {
+          "command": "ask-ai-cli.folderReview",
+          "group": "1_actions"
+        },
+        {
+          "command": "ask-ai-cli.folderFindBugs",
+          "group": "1_actions"
+        },
+        {
+          "command": "ask-ai-cli.folderGenerateTests",
+          "group": "2_mutations"
+        },
+        {
+          "command": "ask-ai-cli.folderDocument",
+          "group": "2_mutations"
+        },
+        {
+          "command": "ask-ai-cli.folderRefactor",
+          "group": "2_mutations"
+        },
+        {
+          "command": "ask-ai-cli.folderListFiles",
+          "group": "3_utils"
         }
       ],
       "editor/context": [

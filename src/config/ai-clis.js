@@ -5,29 +5,33 @@ const AI_CLIS = [
         command: 'claude',
         checkCommand: 'which claude',
         icon: '🤖',
-        terminalName: 'Claude Code'
+        terminalName: 'Claude Code',
+        supported: true
     },
     {
         name: 'Gemini CLI',
-        command: 'gemini-cli',
-        checkCommand: 'which gemini-cli',
+        command: 'gemini',
+        checkCommand: 'which gemini',
         icon: '✨',
         terminalName: 'Gemini CLI',
-        fallbackCommands: ['gemini']
+        fallbackCommands: ['gemini'],
+        supported: true
     },
     {
         name: 'ChatGPT CLI',
         command: 'chatgpt',
         checkCommand: 'which chatgpt',
         icon: '💬',
-        terminalName: 'ChatGPT'
+        terminalName: 'ChatGPT',
+        supported: false
     },
     {
         name: 'Aider',
         command: 'aider',
         checkCommand: 'which aider',
         icon: '🔧',
-        terminalName: 'Aider'
+        terminalName: 'Aider',
+        supported: false
     }
 ];
 

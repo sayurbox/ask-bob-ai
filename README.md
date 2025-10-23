@@ -53,6 +53,22 @@ Hit `Ctrl+K A` and choose:
 
 ---
 
+## 📁 Folder Operations
+
+Right-click any folder in Explorer → **"Bob AI: Folder Operations"** and choose:
+
+- 📖 **Explain module** - Get AI explanation of folder structure & purpose
+- 🔍 **Review code** - Comprehensive code review of all files
+- 🐛 **Find bugs** - Analyze entire module for potential issues
+- ✅ **Generate tests** - Create test coverage for the module
+- 📝 **Document** - Generate or improve module documentation
+- ♻️ **Refactor** - Get refactoring suggestions for the whole module
+- 📂 **List files** - Show file tree preview + send to AI CLI
+
+Perfect for analyzing entire features, reviewing modules, or understanding unfamiliar code! 🚀
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Install
@@ -99,6 +115,7 @@ Your AI explains it line-by-line. Beautiful.
 ### Advanced Features
 
 - **💡 Lightbulb Quick Fixes** - Click 💡 icon for inline AI suggestions
+- **📁 Folder Operations** - Right-click folders for module-level AI operations
 - **📋 Add Feature** - Guided tech spec creation workflow
 - **⚙️ Execute Plan** - Implement from `.md` tech specs
 - **🔒 Terminal Management** - Auto-detects when AI CLI closes
@@ -174,6 +191,15 @@ Edit `src/config/ai-clis.js` to add your own quick actions:
 5. Watch Bob implement it!
 ```
 
+### Tip 4: Folder Operations for Quick Understanding
+```bash
+# Quickly understand unfamiliar modules
+1. Right-click any folder → "Bob AI: Folder Operations"
+2. Choose "📖 Explain module"
+3. Get instant overview of architecture & purpose
+4. Use "📂 List files" to see the file structure first
+```
+
 ---
 
 ## 🔧 Development
@@ -199,6 +225,7 @@ vsce package
 - [x] Tech spec workflow
 - [x] Terminal lifecycle tracking
 - [x] Lightbulb quick fixes
+- [x] Folder operations (module-level AI analysis)
 
 **🚧 Coming Soon:**
 - [ ] VS Code Marketplace

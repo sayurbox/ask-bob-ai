@@ -6,6 +6,16 @@ const { customPromptCommand } = require('./custom-prompt');
 const { copyAndAskAICommand } = require('./copy-and-ask');
 const { addFeatureCommand } = require('./add-feature');
 const { executePlanCommand } = require('./execute-plan');
+const {
+    folderExplainCommand,
+    folderReviewCommand,
+    folderFindBugsCommand,
+    folderGenerateTestsCommand,
+    folderDocumentCommand,
+    folderRefactorCommand,
+    folderListFilesCommand,
+    folderOperationsCommand
+} = require('./folder-operations');
 const { showAICLIPicker } = require('../services/terminal-manager');
 
 /**
@@ -72,6 +82,47 @@ function registerCommands(context) {
         executePlanCommand
     );
 
+    // Folder Operations (individual commands for submenu)
+    const folderExplain = vscode.commands.registerCommand(
+        'ask-ai-cli.folderExplain',
+        folderExplainCommand
+    );
+
+    const folderReview = vscode.commands.registerCommand(
+        'ask-ai-cli.folderReview',
+        folderReviewCommand
+    );
+
+    const folderFindBugs = vscode.commands.registerCommand(
+        'ask-ai-cli.folderFindBugs',
+        folderFindBugsCommand
+    );
+
+    const folderGenerateTests = vscode.commands.registerCommand(
+        'ask-ai-cli.folderGenerateTests',
+        folderGenerateTestsCommand
+    );
+
+    const folderDocument = vscode.commands.registerCommand(
+        'ask-ai-cli.folderDocument',
+        folderDocumentCommand
+    );
+
+    const folderRefactor = vscode.commands.registerCommand(
+        'ask-ai-cli.folderRefactor',
+        folderRefactorCommand
+    );
+
+    const folderListFiles = vscode.commands.registerCommand(
+        'ask-ai-cli.folderListFiles',
+        folderListFilesCommand
+    );
+
+    const folderOperations = vscode.commands.registerCommand(
+        'ask-ai-cli.folderOperations',
+        folderOperationsCommand
+    );
+
     // Add all commands to subscriptions
     context.subscriptions.push(
         copyCodeBlock,
@@ -82,7 +133,15 @@ function registerCommands(context) {
         executeQuickAction,
         startAICLI,
         addFeature,
-        executePlan
+        executePlan,
+        folderExplain,
+        folderReview,
+        folderFindBugs,
+        folderGenerateTests,
+        folderDocument,
+        folderRefactor,
+        folderListFiles,
+        folderOperations
     );
 }
 

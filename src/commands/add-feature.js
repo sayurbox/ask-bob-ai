@@ -1,13 +1,30 @@
 const vscode = require('vscode');
+const path = require('path');
 const { generateCodeReference } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
+const { getRelativePath } = require('../utils/path-utils');
 
 /**
  * Command handler for guided feature addition with tech spec generation
  * Phase 1: Research and create tech spec in /research/research-{feature}.md
+ * @param {vscode.Uri} [uri] - Optional folder URI from context menu
  */
-async function addFeatureCommand() {
+async function addFeatureCommand(uri) {
     const editor = vscode.window.activeTextEditor;
+
+    // Determine if we have folder context
+    let folderContext = null;
+    if (uri && uri.fsPath) {
+        try {
+            const stats = await vscode.workspace.fs.stat(uri);
+            if (stats.type === vscode.FileType.Directory) {
+                const relativePath = getRelativePath(uri.fsPath);
+                folderContext = relativePath || path.basename(uri.fsPath);
+            }
+        } catch (error) {
+            // Not a valid directory, ignore
+        }
+    }
 
     // Step 1: Ask what feature to add
     const featureName = await vscode.window.showInputBox({
@@ -70,6 +87,10 @@ async function addFeatureCommand() {
     // Build comprehensive prompt for tech spec creation
     let fullPrompt = `Research and create a technical specification for the following feature:\n\n`;
     fullPrompt += `Feature: ${featureName}\n`;
+
+    if (folderContext) {
+        fullPrompt += `Target module: ${folderContext}/\n`;
+    }
 
     if (context && context.trim().length > 0) {
         fullPrompt += `Problem: ${context}\n`;

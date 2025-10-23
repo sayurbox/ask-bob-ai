@@ -49,7 +49,13 @@ function findAITerminal() {
                name.includes('anthropic') ||
                shellPath.includes('anthropic') ||
                name.includes('gemini') ||
-               shellPath.includes('gemini');
+               shellPath.includes('gemini') ||
+               name.includes('chatgpt') ||
+               shellPath.includes('chatgpt') ||
+               name.includes('gpt') ||
+               shellPath.includes('gpt') ||
+               name.includes('aider') ||
+               shellPath.includes('aider');
     });
 
     // If no obvious AI terminal found, try to find the most recently active terminal
@@ -104,12 +110,16 @@ async function showAICLIPicker() {
     const detectionPromise = detectInstalledCLIs();
 
     // Show all CLIs immediately, mark detected ones later
-    const quickPickItems = AI_CLIS.map(cli => ({
-        label: `${cli.icon} ${cli.name}`,
-        description: `Command: ${cli.command}`,
-        cli: cli,
-        picked: false
-    }));
+    const quickPickItems = AI_CLIS.map(cli => {
+        const supportStatus = cli.supported ? '' : '🚧 Coming Soon';
+        return {
+            label: `${cli.icon} ${cli.name}`,
+            description: supportStatus || `Command: ${cli.command}`,
+            detail: cli.supported ? undefined : 'This AI CLI is not yet supported',
+            cli: cli,
+            picked: false
+        };
+    });
 
     // Add option for custom command
     quickPickItems.push({
@@ -128,8 +138,13 @@ async function showAICLIPicker() {
                 installed.command === item.cli.command
             );
             if (isInstalled) {
-                item.description = `✅ Detected (${item.cli.command})`;
-                item.picked = true;
+                if (item.cli.supported) {
+                    item.description = `✅ Detected (${item.cli.command})`;
+                    item.picked = true;
+                } else {
+                    item.description = `✅ Detected - 🚧 Coming Soon`;
+                    item.detail = 'Detected but not yet supported by Bob AI CLI';
+                }
             }
         }
     });
@@ -168,6 +183,15 @@ async function showAICLIPicker() {
         return await startAICLI(customCli);
     }
 
+    // Check if CLI is supported before starting
+    if (!selected.cli.supported) {
+        vscode.window.showWarningMessage(
+            `${selected.cli.name} is not yet supported by Bob AI CLI. Support coming soon!`,
+            'Got it'
+        );
+        return null;
+    }
+
     // Start the selected AI CLI (will try even if not detected)
     return await startAICLI(selected.cli);
 }
@@ -190,7 +214,47 @@ function isObviousAITerminal(terminal) {
            name.includes('anthropic') ||
            shellPath.includes('anthropic') ||
            name.includes('gemini') ||
-           shellPath.includes('gemini');
+           shellPath.includes('gemini') ||
+           name.includes('chatgpt') ||
+           shellPath.includes('chatgpt') ||
+           name.includes('gpt') ||
+           shellPath.includes('gpt') ||
+           name.includes('aider') ||
+           shellPath.includes('aider');
+}
+
+/**
+ * Detect which CLI type is running in the terminal
+ * @param {vscode.Terminal} terminal - Terminal to check
+ * @returns {string} CLI type: 'claude', 'gemini', 'chatgpt', 'aider', or 'unknown'
+ */
+function detectCLIType(terminal) {
+    if (!terminal) {
+        return 'unknown';
+    }
+
+    const name = terminal.name.toLowerCase();
+    const shellPath = terminal.creationOptions.shellPath?.toLowerCase() || '';
+
+    if (name.includes('gemini') || shellPath.includes('gemini')) {
+        return 'gemini';
+    }
+
+    if (name.includes('claude') || shellPath.includes('claude') ||
+        name.includes('anthropic') || shellPath.includes('anthropic')) {
+        return 'claude';
+    }
+
+    if (name.includes('chatgpt') || shellPath.includes('chatgpt') ||
+        name.includes('gpt') || shellPath.includes('gpt')) {
+        return 'chatgpt';
+    }
+
+    if (name.includes('aider') || shellPath.includes('aider')) {
+        return 'aider';
+    }
+
+    return 'unknown';
 }
 
 /**
@@ -217,7 +281,7 @@ async function sendToAITerminal(text) {
     // Block action if no obvious AI CLI terminal found
     if (!isObviousAI) {
         const answer = await vscode.window.showErrorMessage(
-            'No AI CLI (Claude Code, Gemini, etc.) is running. Please start an AI CLI first.',
+            'No AI CLI detected. Please start Claude Code or Gemini CLI first.',
             'Start AI CLI Now'
         );
 
@@ -233,17 +297,67 @@ async function sendToAITerminal(text) {
         // Show the terminal first to make it visible
         aiTerminal.show();
 
-        // Send the text
-        aiTerminal.sendText(text);
+        // Detect CLI type and adjust formatting
+        const cliType = detectCLIType(aiTerminal);
 
-        vscode.window.showInformationMessage('Sent to AI CLI terminal');
+        // Check if CLI is supported
+        if (cliType !== 'claude' && cliType !== 'gemini') {
+            const cliName = aiTerminal.name;
+            vscode.window.showWarningMessage(
+                `Support for "${cliName}" is coming soon! Currently only Claude Code and Gemini CLI are supported.`,
+                'Got it'
+            );
+            console.log(`Unsupported CLI detected: ${cliName} (type: ${cliType})`);
+            return false;
+        }
+
+        let formattedText = text;
+        let addNewline = true;
+
+        // Gemini CLI: Use clipboard + auto-paste approach as sendText may not work
+        if (cliType === 'gemini') {
+            // Strip trailing backslash and whitespace if present
+            formattedText = text.replace(/\s*\\+\s*$/, '').trim();
+
+            // Copy to clipboard
+            await vscode.env.clipboard.writeText(formattedText);
+            console.log(`Gemini CLI: Copied to clipboard: ${formattedText.substring(0, 50)}...`);
+
+            // Focus the terminal to ensure paste goes to right place
+            aiTerminal.show();
+
+            // Small delay to ensure terminal is focused
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Try to auto-paste using VS Code's paste command
+            try {
+                await vscode.commands.executeCommand('workbench.action.terminal.paste');
+                vscode.window.showInformationMessage('Text pasted into Gemini CLI terminal');
+            } catch (pasteError) {
+                console.error(`Auto-paste failed: ${pasteError.message}`);
+                // Fallback: show manual paste instruction
+                vscode.window.showInformationMessage(
+                    'Text copied to clipboard! Paste it into Gemini CLI terminal (Cmd+V or Ctrl+V)',
+                    'Got it'
+                );
+            }
+
+            return true;
+        }
+
+        // For Claude and other CLIs, use sendText
+        aiTerminal.sendText(formattedText, addNewline);
+
+        const cliName = cliType === 'claude' ? 'Claude Code' : 'AI CLI';
+        vscode.window.showInformationMessage(`Sent to ${cliName} terminal`);
         return true;
     } catch (error) {
         // If sending fails, terminal might be dead - clean up
         trackedAITerminals.delete(aiTerminal);
 
+        console.error(`Terminal send error:`, error);
         vscode.window.showErrorMessage(
-            'Failed to send to terminal. The AI CLI may have been closed. Please start a new one.'
+            `Failed to send to terminal: ${error.message}. The AI CLI may have been closed.`
         );
         return false;
     }
@@ -258,5 +372,6 @@ module.exports = {
     sendToAITerminal,
     sendToClaudeTerminal: sendToAITerminal, // Backward compatibility alias
     isObviousAITerminal,
-    isObviousClaudeTerminal: isObviousAITerminal // Backward compatibility alias
+    isObviousClaudeTerminal: isObviousAITerminal, // Backward compatibility alias
+    detectCLIType
 };
