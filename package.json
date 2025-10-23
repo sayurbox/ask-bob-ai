@@ -132,7 +132,39 @@
           "command": "ask-ai-cli.executePlan"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "ask-ai-cli.quickActions",
+        "key": "ctrl+k a",
+        "mac": "cmd+k a",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "ask-ai-cli.customPrompt",
+        "key": "ctrl+k s",
+        "mac": "cmd+k s",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "ask-ai-cli.sendToTerminal",
+        "key": "ctrl+k d",
+        "mac": "cmd+k d",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "ask-ai-cli.copyCodeBlock",
+        "key": "ctrl+k f",
+        "mac": "cmd+k f",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "ask-ai-cli.startAICLI",
+        "key": "ctrl+k g",
+        "mac": "cmd+k g",
+        "when": "editorTextFocus"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "node check-node-modules.js"
