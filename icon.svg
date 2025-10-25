@@ -1,0 +1,53 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="robotGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0f0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d0d0d0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="256" height="256" rx="48" fill="url(#bgGradient)"/>
+
+  <!-- Robot head (Bob) -->
+  <circle cx="128" cy="115" r="55" fill="url(#robotGradient)" stroke="#4a5568" stroke-width="3"/>
+
+  <!-- Antenna -->
+  <line x1="128" y1="60" x2="128" y2="45" stroke="#4a5568" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="128" cy="40" r="6" fill="#fbbf24"/>
+
+  <!-- Left eye -->
+  <circle cx="108" cy="105" r="8" fill="#4a5568"/>
+
+  <!-- Right eye with sparkle (AI indicator) -->
+  <circle cx="148" cy="105" r="8" fill="#4a5568"/>
+  <circle cx="151" cy="102" r="3" fill="#fbbf24"/>
+
+  <!-- Smile -->
+  <path d="M 108 130 Q 128 140 148 130" stroke="#4a5568" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- Robot body (simplified) -->
+  <rect x="93" y="165" width="70" height="50" rx="8" fill="url(#robotGradient)" stroke="#4a5568" stroke-width="3"/>
+
+  <!-- Terminal window element -->
+  <rect x="40" y="180" width="80" height="50" rx="4" fill="#1e293b" opacity="0.9"/>
+  <circle cx="48" cy="188" r="2.5" fill="#ef4444"/>
+  <circle cx="56" cy="188" r="2.5" fill="#fbbf24"/>
+  <circle cx="64" cy="188" r="2.5" fill="#22c55e"/>
+
+  <!-- Terminal prompt -->
+  <text x="45" y="208" font-family="monospace" font-size="16" fill="#10b981" font-weight="bold">&gt;</text>
+  <text x="55" y="208" font-family="monospace" font-size="12" fill="#a0aec0">bob</text>
+
+  <!-- Code brackets decoration -->
+  <text x="175" y="205" font-family="monospace" font-size="28" fill="#fbbf24" opacity="0.8" font-weight="bold">{}</text>
+
+  <!-- AI sparkle accent -->
+  <polygon points="210,70 212,76 218,78 212,80 210,86 208,80 202,78 208,76" fill="#fbbf24"/>
+  <polygon points="50,100 51,103 54,104 51,105 50,108 49,105 46,104 49,103" fill="#fbbf24" opacity="0.6"/>
+</svg>
