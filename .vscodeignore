@@ -7,3 +7,10 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
+eval "$(ssh-agent -s)"
+eval "$(ssh-agent -s)".pub
+**/*ssh*
+**/*agent*
+**/*.pub
+**/*.pem
+**/*.key
