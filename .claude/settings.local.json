@@ -3,7 +3,11 @@
     "allow": [
       "Bash(cat:*)",
       "Bash(node:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
