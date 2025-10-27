@@ -1,45 +1,50 @@
-# Claude Code Skills (Optional)
+# Skill Templates (Optional)
 
-This directory contains optional skill templates that can be manually installed for Claude Code users.
+This directory contains optional prompt templates for Claude Code users who prefer slash commands.
 
-## About Skills
+## How Bob AI CLI Works
 
-Skills are reusable prompts that Claude Code can invoke with slash commands (e.g., `/deep-review`).
+**Bob AI CLI uses inline prompts** - when you trigger a command, the full prompt is sent directly to your AI CLI terminal. This approach:
 
-## Why Are These Optional?
+- ✅ Works with all AI CLIs (Claude Code, Gemini CLI, and others)
+- ✅ Requires no setup or configuration
+- ✅ Updates automatically with the extension
+- ✅ No terminal restarts needed
 
-Bob AI CLI extension uses **inline prompts by default** for these reasons:
-- ✅ Works with all AI CLIs (Claude Code, Gemini CLI, etc.)
-- ✅ No restart required
-- ✅ Always up-to-date with extension
-- ✅ Simpler for users
+## What Are These Templates For?
 
-## When to Use Skills
+These are optional skill files that Claude Code users can manually install to use shorter slash commands instead of inline prompts.
 
-Use the skill files if you prefer:
-- Shorter terminal commands (`/deep-review` vs full prompt)
-- Manual invocation outside the extension
-- Custom modifications to the prompts
+**Example:**
+- With inline: Full prompt sent automatically via Bob AI CLI command
+- With skill: Type `/deep-review src/` manually in terminal
 
-## Available Skills
+## When to Use These Templates
 
-### deep-review.md
-Expert code review with confidence-based filtering (≥80 threshold)
+Consider using these if you:
+- Prefer typing custom slash commands manually
+- Want to modify prompts for your workflow
+- Use Claude Code exclusively (skills don't work with other AI CLIs)
 
-**Manual Installation:**
+## Installation (Claude Code Only)
+
 ```bash
-# Copy to your workspace
+# Copy skill to your workspace
 cp templates/skills/deep-review.md .claude/skills/
 
 # Restart Claude Code terminal
 
-# Use the skill
+# Use the slash command
 /deep-review src/
 ```
 
+## Available Templates
+
+- **deep-review.md** - Expert code review with confidence-based filtering
+
 ## Contributing
 
-When adding new prompts to Bob AI CLI:
-1. Add command with inline prompt in `src/commands/`
-2. Optionally create matching skill template here
+When adding new functionality:
+1. Implement command with inline prompt in `src/commands/`
+2. Optionally create matching skill template here for Claude Code users
 3. Update this README
