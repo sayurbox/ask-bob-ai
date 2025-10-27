@@ -10,12 +10,10 @@ Bob AI CLI is a Visual Studio Code extension that enhances productivity when wor
 
 ### Core Components
 
-- **Eight Main Commands**:
+- **Six Main Commands**:
   - `ask-ai-cli.copyCodeBlock` - Copy code reference to clipboard
   - `ask-ai-cli.sendToTerminal` - Send code reference to AI CLI terminal
   - `ask-ai-cli.quickActions` - Template-based prompt actions
-  - `ask-ai-cli.customPrompt` - User-defined custom prompts
-  - `ask-ai-cli.copyAndAskAI` - Copy text then prompt workflow
   - `ask-ai-cli.startAICLI` - Launch AI CLI picker
   - `ask-ai-cli.addFeature` - Guided tech spec creation workflow (NEW)
   - `ask-ai-cli.executePlan` - Smart plan execution from .md files or code selection (NEW)
@@ -117,8 +115,6 @@ Since F5 debug mode may not work on all systems, the extension includes comprehe
   - `copyCodeBlock` - Copy to clipboard
   - `sendToTerminal` - Send reference only
   - `quickActions` - Template prompts
-  - `customPrompt` - User input prompt
-  - `copyAndAskAI` - Copy then ask workflow
   - `startAICLI` - Launch AI CLI
   - `addFeature` - Tech spec creation workflow (NEW)
   - `executePlan` - Execute plan from .md or selection (NEW)

@@ -2,13 +2,12 @@ const vscode = require('vscode');
 const { copyCodeBlockCommand } = require('./copy-code-block');
 const { sendToTerminalCommand } = require('./send-to-terminal');
 const { quickActionsCommand, executeQuickActionCommand } = require('./quick-actions');
-const { customPromptCommand } = require('./custom-prompt');
-const { copyAndAskAICommand } = require('./copy-and-ask');
 const { addFeatureCommand } = require('./add-feature');
 const { executePlanCommand } = require('./execute-plan');
 const {
     folderExplainCommand,
     folderReviewCommand,
+    folderDeepReviewCommand,
     folderFindBugsCommand,
     folderGenerateTestsCommand,
     folderDocumentCommand,
@@ -39,18 +38,6 @@ function registerCommands(context) {
     const quickActions = vscode.commands.registerCommand(
         'ask-ai-cli.quickActions',
         quickActionsCommand
-    );
-
-    // Custom prompt
-    const customPrompt = vscode.commands.registerCommand(
-        'ask-ai-cli.customPrompt',
-        customPromptCommand
-    );
-
-    // Copy & Ask AI
-    const copyAndAskAI = vscode.commands.registerCommand(
-        'ask-ai-cli.copyAndAskAI',
-        copyAndAskAICommand
     );
 
     // Execute quick action (from code action provider)
@@ -93,6 +80,11 @@ function registerCommands(context) {
         folderReviewCommand
     );
 
+    const folderDeepReview = vscode.commands.registerCommand(
+        'ask-ai-cli.folderDeepReview',
+        folderDeepReviewCommand
+    );
+
     const folderFindBugs = vscode.commands.registerCommand(
         'ask-ai-cli.folderFindBugs',
         folderFindBugsCommand
@@ -128,14 +120,13 @@ function registerCommands(context) {
         copyCodeBlock,
         sendToTerminal,
         quickActions,
-        customPrompt,
-        copyAndAskAI,
         executeQuickAction,
         startAICLI,
         addFeature,
         executePlan,
         folderExplain,
         folderReview,
+        folderDeepReview,
         folderFindBugs,
         folderGenerateTests,
         folderDocument,
