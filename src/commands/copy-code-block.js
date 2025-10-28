@@ -1,5 +1,6 @@
 const vscode = require('vscode');
 const { generateCodeReference } = require('../utils/code-reference');
+const { playSuccessSound } = require('../utils/sound');
 
 /**
  * Command handler for copying code block reference to clipboard
@@ -30,6 +31,13 @@ async function copyCodeBlockCommand() {
     try {
         await vscode.env.clipboard.writeText(output);
         vscode.window.showInformationMessage(`Copied to clipboard: ${output}`);
+
+        // Play success sound after successful copy
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
     } catch (err) {
         vscode.window.showErrorMessage(`Failed to copy to clipboard: ${err}`);
     }
