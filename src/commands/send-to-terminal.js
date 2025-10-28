@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 const { generateCodeReference } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
+const { playSuccessSound } = require('../utils/sound');
 
 /**
  * Command handler for sending code reference to terminal
@@ -31,7 +32,18 @@ async function sendToTerminalCommand() {
     const terminalText = `${output} \\`;
 
     // Send to AI CLI terminal
-    await sendToAITerminal(terminalText);
+    try {
+        await sendToAITerminal(terminalText);
+
+        // Play success sound after command completion
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+    } catch (err) {
+        console.error('Failed to send to terminal:', err);
+    }
 }
 
 module.exports = {

@@ -3,6 +3,7 @@ const path = require('path');
 const { generateCodeReference } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { getRelativePath } = require('../utils/path-utils');
+const { playSuccessSound } = require('../utils/sound');
 
 /**
  * Command handler for guided feature addition with tech spec generation
@@ -115,11 +116,23 @@ async function addFeatureCommand(uri) {
     fullPrompt += `Research the existing codebase structure and patterns before proposing the solution. \\`;
 
     // Send to terminal
-    await sendToAITerminal(fullPrompt);
+    try {
+        await sendToAITerminal(fullPrompt);
 
-    vscode.window.showInformationMessage(
-        `Tech spec research started! Bob AI will create: /research/research-${safeFileName}.md`
-    );
+        // Play success sound after command completion
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+
+        vscode.window.showInformationMessage(
+            `Tech spec research started! Bob AI will create: /research/research-${safeFileName}.md`
+        );
+    } catch (err) {
+        console.error('Failed to send to terminal:', err);
+        vscode.window.showErrorMessage('Failed to start tech spec research');
+    }
 }
 
 module.exports = {
