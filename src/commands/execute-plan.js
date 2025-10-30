@@ -3,6 +3,7 @@ const path = require('path');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { getWorkspaceRelativePath } = require('../utils/path-utils');
 const { generateCodeReference } = require('../utils/code-reference');
+const { playSuccessSound } = require('../utils/sound');
 
 /**
  * Command handler for executing implementation plan
@@ -56,11 +57,23 @@ async function executePlanCommand(uri) {
         fullPrompt += `Follow existing codebase patterns and conventions. \\`;
 
         // Send to terminal
-        await sendToAITerminal(fullPrompt);
+        try {
+            await sendToAITerminal(fullPrompt);
 
-        vscode.window.showInformationMessage(
-            `Implementation started! Bob AI is following: ${relativePath}`
-        );
+            // Play success sound after command completion
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
+
+            vscode.window.showInformationMessage(
+                `Implementation started! Bob AI is following: ${relativePath}`
+            );
+        } catch (err) {
+            console.error('Failed to send to terminal:', err);
+            vscode.window.showErrorMessage('Failed to start implementation');
+        }
         return;
     }
 
@@ -104,11 +117,23 @@ async function executePlanCommand(uri) {
         fullPrompt += `Follow existing codebase patterns and conventions. \\`;
 
         // Send to terminal
-        await sendToAITerminal(fullPrompt);
+        try {
+            await sendToAITerminal(fullPrompt);
 
-        vscode.window.showInformationMessage(
-            `Implementation started! Bob AI is following: ${relativePath}`
-        );
+            // Play success sound after command completion
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
+
+            vscode.window.showInformationMessage(
+                `Implementation started! Bob AI is following: ${relativePath}`
+            );
+        } catch (err) {
+            console.error('Failed to send to terminal:', err);
+            vscode.window.showErrorMessage('Failed to start implementation');
+        }
         return;
     }
 
@@ -139,9 +164,21 @@ async function executePlanCommand(uri) {
         fullPrompt += `Follow existing codebase patterns and conventions. \\`;
 
         // Send to terminal
-        await sendToAITerminal(fullPrompt);
+        try {
+            await sendToAITerminal(fullPrompt);
 
-        vscode.window.showInformationMessage('Implementation started from inline plan!');
+            // Play success sound after command completion
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
+
+            vscode.window.showInformationMessage('Implementation started from inline plan!');
+        } catch (err) {
+            console.error('Failed to send to terminal:', err);
+            vscode.window.showErrorMessage('Failed to start inline implementation');
+        }
         return;
     }
 

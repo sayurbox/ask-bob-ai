@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const { QUICK_ACTIONS } = require('../config/ai-clis');
 const { generateCodeReference, generateCodeReferenceFromRange } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
+const { playSuccessSound } = require('../utils/sound');
 
 /**
  * Command handler for quick actions (template prompts)
@@ -63,7 +64,18 @@ async function quickActionsCommand() {
     const fullMessage = `${finalPrompt} ${codeReference} \\`;
 
     // Send to terminal
-    await sendToAITerminal(fullMessage);
+    try {
+        await sendToAITerminal(fullMessage);
+
+        // Play success sound after command completion
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+    } catch (err) {
+        console.error('Failed to send to terminal:', err);
+    }
 }
 
 /**
@@ -96,7 +108,18 @@ async function executeQuickActionCommand(document, range, action) {
     const fullMessage = `${finalPrompt} ${codeReference} \\`;
 
     // Send to terminal
-    await sendToAITerminal(fullMessage);
+    try {
+        await sendToAITerminal(fullMessage);
+
+        // Play success sound after command completion
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+    } catch (err) {
+        console.error('Failed to send to terminal:', err);
+    }
 }
 
 module.exports = {

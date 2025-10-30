@@ -6,7 +6,8 @@
 
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.74.0+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Version](https://img.shields.io/badge/version-0.0.1-orange.svg)
+![Version](https://img.shields.io/badge/version-0.0.2-orange.svg)
+[![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-brightgreen.svg)](https://marketplace.visualstudio.com/items?itemName=1031022.bob-ai-cli)
 
 *Select code. Hit a key. Let AI do the heavy lifting.*
 
@@ -29,7 +30,6 @@ The fastest way to use Bob AI—your fingers never leave home row!
 | Keys | Mac | What it does |
 |------|-----|--------------|
 | `Ctrl+K A` | `Cmd+K A` | 🎯 **Quick Actions** menu |
-| `Ctrl+K S` | `Cmd+K S` | ✏️ **Custom** prompt |
 | `Ctrl+K D` | `Cmd+K D` | 📤 **Send** to terminal |
 | `Ctrl+K F` | `Cmd+K F` | 📋 Copy **reference** |
 | `Ctrl+K G` | `Cmd+K G` | 🚀 Start AI CLI |
@@ -59,6 +59,7 @@ Right-click any folder in Explorer → **"Bob AI: Folder Operations"** and choos
 
 - 📖 **Explain module** - Get AI explanation of folder structure & purpose
 - 🔍 **Review code** - Comprehensive code review of all files
+- 🔬 **Deep Code Review** - Expert review with confidence-based filtering (≥80 threshold)
 - 🐛 **Find bugs** - Analyze entire module for potential issues
 - ✅ **Generate tests** - Create test coverage for the module
 - 📝 **Document** - Generate or improve module documentation
@@ -107,7 +108,6 @@ Your AI explains it line-by-line. Beautiful.
 | Command | Shortcut | What it does |
 |---------|----------|--------------|
 | Quick Actions | `Ctrl+K A` | Template prompt menu |
-| Custom Prompt | `Ctrl+K S` | Type your own |
 | Send to Terminal | `Ctrl+K D` | Just the reference |
 | Copy Reference | `Ctrl+K F` | Copy `@path#L1-5` |
 | Start AI CLI | `Ctrl+K G` | Launch Claude/Gemini |
@@ -124,17 +124,20 @@ Your AI explains it line-by-line. Beautiful.
 
 ## 📦 Installation
 
-### Option 1: From Source (Recommended)
+### Option 1: VS Code Marketplace (Recommended)
+
+**[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=1031022.bob-ai-cli)**
+
+Or search "Bob AI CLI" in VS Code Extensions panel.
+
+### Option 2: From Source
 ```bash
-git clone https://github.com/YOUR_USERNAME/bob-ai-cli-extension.git
-cd bob-ai-cli-extension
+git clone https://github.com/sayurbox/ask-bob-ai.git
+cd ask-bob-ai
 npm install -g @vscode/vsce
 vsce package
 # Install .vsix in VS Code Extensions panel
 ```
-
-### Option 2: VS Code Marketplace
-*(Coming soon!)*
 
 ---
 
@@ -206,8 +209,8 @@ Edit `src/config/ai-clis.js` to add your own quick actions:
 
 ```bash
 # Clone & open
-git clone https://github.com/YOUR_USERNAME/bob-ai-cli-extension.git
-code bob-ai-cli-extension
+git clone https://github.com/sayurbox/ask-bob-ai.git
+cd ask-bob-ai
 
 # Test (press F5 in VS Code)
 # Or package and install
@@ -226,18 +229,21 @@ vsce package
 - [x] Terminal lifecycle tracking
 - [x] Lightbulb quick fixes
 - [x] Folder operations (module-level AI analysis)
+- [x] Deep Code Review with confidence filtering
+- [x] VS Code Marketplace
+- [x] Streamlined command set (6 core commands)
 
 **🚧 Coming Soon:**
-- [ ] VS Code Marketplace
 - [ ] Custom template UI
 - [ ] Multi-file references
 - [ ] Response preview in editor
+- [ ] Claude Code skills integration
 
 ---
 
 ## 🐛 Issues?
 
-[Open an issue](../../issues/new) with:
+[Open an issue](https://github.com/sayurbox/ask-bob-ai/issues/new) with:
 - Your OS & VS Code version
 - Steps to reproduce
 - What you expected vs what happened
@@ -258,6 +264,6 @@ MIT - Go wild! 🎉
 
 Press `Ctrl+K A` and let Bob do the work
 
-[⭐ Star](../../stargazers) • [🐛 Issues](../../issues) • [💡 Ideas](../../issues)
+[⭐ Star](https://github.com/sayurbox/ask-bob-ai/stargazers) • [🐛 Issues](https://github.com/sayurbox/ask-bob-ai/issues) • [💡 Ideas](https://github.com/sayurbox/ask-bob-ai/issues) • [📦 Marketplace](https://marketplace.visualstudio.com/items?itemName=1031022.bob-ai-cli)
 
 </div>

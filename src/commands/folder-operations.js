@@ -2,6 +2,26 @@ const vscode = require('vscode');
 const path = require('path');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { getRelativePath } = require('../utils/path-utils');
+const { playSuccessSound } = require('../utils/sound');
+
+/**
+ * Helper function to send to terminal and play success sound
+ * @param {string} message - Message to send to terminal
+ */
+async function sendToTerminalWithSound(message) {
+    try {
+        await sendToTerminalWithSound(message);
+
+        // Play success sound after command completion
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+    } catch (err) {
+        console.error('Failed to send to terminal:', err);
+    }
+}
 
 /**
  * Get file or folder path and determine type
@@ -42,7 +62,7 @@ async function folderExplainCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Explain the purpose and structure of this ${type}: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -55,7 +75,7 @@ async function folderReviewCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Review the code in this ${type} and provide feedback: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -68,7 +88,7 @@ async function folderFindBugsCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Analyze this ${type} for potential bugs and issues: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -81,7 +101,7 @@ async function folderGenerateTestsCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Generate test files for this ${type}: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -94,7 +114,7 @@ async function folderDocumentCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Add documentation for this ${type}: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -107,7 +127,39 @@ async function folderRefactorCommand(uri) {
     const suffix = info.isDirectory ? '/' : '';
     const type = info.isDirectory ? 'module' : 'file';
     const message = `Suggest refactoring improvements for this ${type}: ${info.displayPath}${suffix}`;
-    await sendToAITerminal(message);
+    await sendToTerminalWithSound(message);
+}
+
+/**
+ * Command: Deep Code Review (confidence-based filtering for high-quality feedback)
+ */
+async function folderDeepReviewCommand(uri) {
+    const info = await getResourceInfo(uri);
+    if (!info) return;
+
+    const suffix = info.isDirectory ? '/' : '';
+
+    // Condensed expert code review prompt - works with all AI CLIs
+    const message = `Perform expert code review on ${info.displayPath}${suffix}
+
+Review against CLAUDE.md project guidelines for: imports, conventions, error handling, testing, naming.
+
+Identify bugs: logic errors, null handling, race conditions, security issues, performance problems.
+
+Assess quality: duplication, missing error handling, test coverage.
+
+CONFIDENCE SCORING (report only ≥80):
+- 80-89: High confidence - verified real issue, impacts functionality or violates explicit guidelines
+- 90-100: Certain - confirmed critical issue, happens frequently
+
+OUTPUT FORMAT:
+1. State review scope
+2. Group by severity (Critical/Important)
+3. Per issue: confidence score, file:line, guideline reference/bug explanation, concrete fix
+
+If no ≥80 issues found, confirm code meets standards.`;
+
+    await sendToTerminalWithSound(message);
 }
 
 /**
@@ -177,7 +229,7 @@ async function folderListFilesCommand(uri) {
         if (!info.isDirectory) {
             // For files, show file reference and let AI read it
             const message = `Show me the structure and key components of: ${info.displayPath}`;
-            await sendToAITerminal(message);
+            await sendToTerminalWithSound(message);
             return;
         }
 
@@ -222,7 +274,7 @@ async function folderListFilesCommand(uri) {
 
         // Send to AI terminal with the file list
         const message = `Here's the file structure for ${info.displayPath}/:\n\n${fileList}`;
-        await sendToAITerminal(message);
+        await sendToTerminalWithSound(message);
 
     } catch (error) {
         vscode.window.showErrorMessage(`Failed to show structure: ${error.message}`);
