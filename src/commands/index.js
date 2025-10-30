@@ -15,6 +15,7 @@ const {
     folderListFilesCommand,
     folderOperationsCommand
 } = require('./folder-operations');
+const { toggleSoundCommand } = require('./toggle-sound');
 const { showAICLIPicker } = require('../services/terminal-manager');
 
 /**
@@ -115,6 +116,12 @@ function registerCommands(context) {
         folderOperationsCommand
     );
 
+    // Toggle sound effects
+    const toggleSound = vscode.commands.registerCommand(
+        'ask-ai-cli.toggleSound',
+        toggleSoundCommand
+    );
+
     // Add all commands to subscriptions
     context.subscriptions.push(
         copyCodeBlock,
@@ -132,7 +139,8 @@ function registerCommands(context) {
         folderDocument,
         folderRefactor,
         folderListFiles,
-        folderOperations
+        folderOperations,
+        toggleSound
     );
 }
 
