@@ -2,7 +2,7 @@
   "name": "bob-ai-cli",
   "displayName": "Bob AI CLI",
   "description": "Smart code assistant for Claude Code and other AI CLIs - copy code references, send to terminal, and use quick action templates",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "publisher": "1031022",
   "repository": {
     "type": "git",
@@ -20,6 +20,16 @@
   ],
   "main": "./src/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Bob AI CLI",
+      "properties": {
+        "bobAiCli.enableSoundEffects": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable sound feedback when executing commands"
+        }
+      }
+    },
     "commands": [
       {
         "command": "ask-ai-cli.startAICLI",
@@ -84,6 +94,10 @@
       {
         "command": "ask-ai-cli.folderOperations",
         "title": "Bob AI: Folder Operations"
+      },
+      {
+        "command": "ask-ai-cli.toggleSound",
+        "title": "Bob AI: Toggle Sound Effects"
       }
     ],
     "submenus": [
@@ -189,6 +203,9 @@
         },
         {
           "command": "ask-ai-cli.executePlan"
+        },
+        {
+          "command": "ask-ai-cli.toggleSound"
         }
       ]
     },

@@ -21,6 +21,8 @@ Bob AI connects VS Code to AI CLIs like **Claude Code** and **Gemini CLI**. Sele
 
 **Zero config. Pure speed. Maximum fun.** 🚀
 
+*Includes delightful sound feedback (toggle on/off in settings)*
+
 ---
 
 ## ⚡ Keyboard Shortcuts (ASDF Home Row)
@@ -111,6 +113,7 @@ Your AI explains it line-by-line. Beautiful.
 | Send to Terminal | `Ctrl+K D` | Just the reference |
 | Copy Reference | `Ctrl+K F` | Copy `@path#L1-5` |
 | Start AI CLI | `Ctrl+K G` | Launch Claude/Gemini |
+| Toggle Sound Effects | - | Enable/disable sound feedback |
 
 ### Advanced Features
 
@@ -119,6 +122,33 @@ Your AI explains it line-by-line. Beautiful.
 - **📋 Add Feature** - Guided tech spec creation workflow
 - **⚙️ Execute Plan** - Implement from `.md` tech specs
 - **🔒 Terminal Management** - Auto-detects when AI CLI closes
+
+---
+
+## ⚙️ Settings & Customization
+
+### 🔊 Sound Effects
+
+Bob AI includes delightful birds chirping sound feedback when you execute commands! Control it your way:
+
+**Toggle via Command Palette:**
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Type "Bob AI: Toggle Sound Effects"
+3. Press Enter to enable/disable
+
+**Configure in Settings:**
+1. Open Settings: `Ctrl+,` (or `Cmd+,` on Mac)
+2. Search for "Bob AI CLI"
+3. Check/uncheck "Enable Sound Effects"
+
+**Or edit settings.json directly:**
+```json
+{
+  "bobAiCli.enableSoundEffects": true  // or false to disable
+}
+```
+
+**Default:** Sound effects are **enabled** by default. Turn them off if you prefer silent operation!
 
 ---
 
@@ -232,6 +262,7 @@ vsce package
 - [x] Deep Code Review with confidence filtering
 - [x] VS Code Marketplace
 - [x] Streamlined command set (6 core commands)
+- [x] Sound effects with customizable settings
 
 **🚧 Coming Soon:**
 - [ ] Custom template UI

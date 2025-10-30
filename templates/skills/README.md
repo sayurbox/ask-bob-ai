@@ -26,6 +26,11 @@ Consider using these if you:
 - Want to modify prompts for your workflow
 - Use Claude Code exclusively (skills don't work with other AI CLIs)
 
+## Available Templates
+
+### deep-review.md
+Expert code review with confidence-based filtering (≥80 threshold)
+
 ## Installation (Claude Code Only)
 
 ```bash
@@ -37,10 +42,6 @@ cp templates/skills/deep-review.md .claude/skills/
 # Use the slash command
 /deep-review src/
 ```
-
-## Available Templates
-
-- **deep-review.md** - Expert code review with confidence-based filtering
 
 ## Contributing
 

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const vscode = require('vscode');
 
 /**
  * Play a sound file using system commands
@@ -52,6 +53,14 @@ async function playSound(soundPath) {
  * @returns {Promise<void>}
  */
 async function playSuccessSound() {
+    // Check if sound effects are enabled in settings
+    const config = vscode.workspace.getConfiguration('bobAiCli');
+    const soundEnabled = config.get('enableSoundEffects', true);
+
+    if (!soundEnabled) {
+        return; // Skip sound playback if disabled
+    }
+
     const extensionPath = require('../extension').getExtensionPath();
     const soundPath = path.join(extensionPath, 'resources', 'feedback_sound.aiff');
     await playSound(soundPath);
