@@ -18,7 +18,6 @@ const DEFAULT_TEMPLATES = [
 
 // Cache for loaded templates
 let cachedTemplates = null;
-let fileWatcher = null;
 
 /**
  * Parse markdown file with frontmatter
@@ -75,56 +74,115 @@ function parseTemplate(filePath) {
 }
 
 /**
- * Load templates from workspace templates/quick-actions/ directory
+ * Load templates from a directory
+ * @param {string} dir - Directory path
+ * @param {object} metadata - Metadata to attach to each template
+ * @returns {Array} Array of templates with metadata
  */
-function loadWorkspaceTemplates() {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-
-    if (!workspaceFolders || workspaceFolders.length === 0) {
-        return null;
-    }
-
-    const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    const templatesDir = path.join(workspaceRoot, 'templates', 'quick-actions');
-
-    // Check if templates directory exists
-    if (!fs.existsSync(templatesDir)) {
-        return null;
+function loadFromDirectory(dir, metadata = {}) {
+    if (!fs.existsSync(dir)) {
+        return [];
     }
 
     try {
-        const files = fs.readdirSync(templatesDir);
+        const files = fs.readdirSync(dir);
         const templates = [];
 
-        // Load all .md files
         files.forEach(file => {
             if (path.extname(file) === '.md' && file !== 'README.md') {
-                const filePath = path.join(templatesDir, file);
+                const filePath = path.join(dir, file);
                 const template = parseTemplate(filePath);
                 if (template) {
-                    templates.push(template);
+                    templates.push({
+                        ...template,
+                        filename: file,
+                        path: filePath,
+                        ...metadata
+                    });
                 }
             }
         });
 
-        if (templates.length === 0) {
-            return null;
-        }
-
-        // Add separator and custom prompt option
-        templates.push({ label: '─────────────────────', prompt: null });
-        templates.push({ label: '✏️ Custom prompt...', prompt: 'CUSTOM', kind: 'quickfix' });
-
         return templates;
     } catch (err) {
-        console.error('Failed to load workspace templates:', err);
-        return null;
+        console.error(`Failed to load templates from ${dir}:`, err);
+        return [];
     }
 }
 
 /**
- * Get quick action templates
- * Priority: workspace templates > default templates
+ * Load extension default templates
+ */
+function loadExtensionDefaults() {
+    const extensionPath = require('../extension').getExtensionPath();
+    const templatesDir = path.join(extensionPath, 'templates', 'quick-actions');
+
+    return loadFromDirectory(templatesDir, {
+        isCustom: false,
+        source: 'extension'
+    });
+}
+
+/**
+ * Load user custom templates from .askbob/
+ */
+function loadUserCustoms() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+        return [];
+    }
+
+    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+    const userTemplatesDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
+
+    return loadFromDirectory(userTemplatesDir, {
+        isCustom: true,
+        source: 'user'
+    });
+}
+
+/**
+ * Merge templates with priority: user customs > extension defaults
+ */
+function mergeTemplates(defaults, customs) {
+    const map = new Map();
+
+    // Add all defaults (keyed by filename)
+    defaults.forEach(template => {
+        map.set(template.filename, template);
+    });
+
+    // Override with customs (same filename = replace)
+    customs.forEach(template => {
+        map.set(template.filename, template);
+    });
+
+    // Convert to array and sort by label
+    return Array.from(map.values()).sort((a, b) =>
+        a.label.localeCompare(b.label)
+    );
+}
+
+/**
+ * Get templates with full metadata (for editing UI)
+ * Priority: .askbob/ > templates/
+ */
+function getTemplatesWithMetadata() {
+    const extensionDefaults = loadExtensionDefaults();
+    const userCustoms = loadUserCustoms();
+
+    // Merge with user overrides
+    const merged = mergeTemplates(extensionDefaults, userCustoms);
+
+    console.log(`Loaded ${merged.length} templates (${userCustoms.length} custom, ${extensionDefaults.length} defaults)`);
+
+    return merged;
+}
+
+/**
+ * Get quick action templates (simple format for Quick Pick)
+ * Priority: .askbob/ > templates/ > hardcoded defaults
  */
 function getTemplates() {
     // Return cached templates if available
@@ -132,16 +190,28 @@ function getTemplates() {
         return cachedTemplates;
     }
 
-    // Try loading workspace templates
-    const workspaceTemplates = loadWorkspaceTemplates();
+    // Load with metadata
+    const templatesWithMetadata = getTemplatesWithMetadata();
 
-    if (workspaceTemplates) {
-        cachedTemplates = workspaceTemplates;
-        console.log(`Loaded ${workspaceTemplates.length - 2} custom quick action templates`);
-        return workspaceTemplates;
+    // If we have templates from files, use them
+    if (templatesWithMetadata.length > 0) {
+        // Convert to simple format (without metadata)
+        const templates = templatesWithMetadata.map(t => ({
+            label: t.label,
+            prompt: t.prompt,
+            kind: t.kind
+        }));
+
+        // Add separator and custom prompt option
+        templates.push({ label: '─────────────────────', prompt: null });
+        templates.push({ label: '✏️ Custom prompt...', prompt: 'CUSTOM', kind: 'quickfix' });
+
+        cachedTemplates = templates;
+        return templates;
     }
 
-    // Fall back to defaults
+    // Fall back to hardcoded defaults
+    console.log('No template files found, using hardcoded defaults');
     cachedTemplates = DEFAULT_TEMPLATES;
     return DEFAULT_TEMPLATES;
 }
@@ -156,7 +226,7 @@ function reloadTemplates() {
 
 /**
  * Initialize template file watcher
- * Watches templates/quick-actions/ directory for changes
+ * Watches both templates/ and .askbob/quick-actions/ directories
  */
 function initializeFileWatcher(context) {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -166,15 +236,6 @@ function initializeFileWatcher(context) {
     }
 
     const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    const templatesDir = path.join(workspaceRoot, 'templates', 'quick-actions');
-
-    if (!fs.existsSync(templatesDir)) {
-        return;
-    }
-
-    // Create file system watcher for .md files
-    const pattern = new vscode.RelativePattern(templatesDir, '*.md');
-    fileWatcher = vscode.workspace.createFileSystemWatcher(pattern);
 
     // Reload on any change
     const reloadOnChange = () => {
@@ -183,29 +244,47 @@ function initializeFileWatcher(context) {
         vscode.window.showInformationMessage('Quick action templates reloaded');
     };
 
-    fileWatcher.onDidCreate(reloadOnChange);
-    fileWatcher.onDidChange(reloadOnChange);
-    fileWatcher.onDidDelete(reloadOnChange);
+    // Watch templates/quick-actions/ (if exists)
+    const templatesDir = path.join(workspaceRoot, 'templates', 'quick-actions');
+    if (fs.existsSync(templatesDir)) {
+        const templatesPattern = new vscode.RelativePattern(templatesDir, '*.md');
+        const templatesWatcher = vscode.workspace.createFileSystemWatcher(templatesPattern);
 
-    // Register disposable
-    context.subscriptions.push(fileWatcher);
+        templatesWatcher.onDidCreate(reloadOnChange);
+        templatesWatcher.onDidChange(reloadOnChange);
+        templatesWatcher.onDidDelete(reloadOnChange);
 
-    console.log('Template file watcher initialized');
+        context.subscriptions.push(templatesWatcher);
+        console.log('Watching templates/quick-actions/');
+    }
+
+    // Watch .askbob/quick-actions/ (if exists)
+    const askbobDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
+    if (fs.existsSync(askbobDir)) {
+        const askbobPattern = new vscode.RelativePattern(askbobDir, '*.md');
+        const askbobWatcher = vscode.workspace.createFileSystemWatcher(askbobPattern);
+
+        askbobWatcher.onDidCreate(reloadOnChange);
+        askbobWatcher.onDidChange(reloadOnChange);
+        askbobWatcher.onDidDelete(reloadOnChange);
+
+        context.subscriptions.push(askbobWatcher);
+        console.log('Watching .askbob/quick-actions/');
+    }
+
+    console.log('Template file watchers initialized');
 }
 
 /**
- * Dispose file watcher
+ * Dispose resources
  */
 function dispose() {
-    if (fileWatcher) {
-        fileWatcher.dispose();
-        fileWatcher = null;
-    }
     cachedTemplates = null;
 }
 
 module.exports = {
     getTemplates,
+    getTemplatesWithMetadata,
     reloadTemplates,
     initializeFileWatcher,
     dispose

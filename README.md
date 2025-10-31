@@ -150,6 +150,34 @@ Bob AI includes delightful birds chirping sound feedback when you execute comman
 
 **Default:** Sound effects are **enabled** by default. Turn them off if you prefer silent operation!
 
+### ✏️ Customize Quick Action Prompts
+
+Bob AI lets you customize all Quick Action prompts to match your workflow! Edit templates, create new ones, or reset to defaults.
+
+**Edit via Command Palette:**
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Type "Bob AI: Edit Quick Action Prompts"
+3. Choose your editing mode:
+   - **🎨 Open Visual Editor** (Recommended) - Edit templates in a friendly UI
+   - **📄 Edit Files Directly** - Open template files in your editor
+   - **📁 Open .askbob Folder** - Browse all customizations
+
+**Visual Editor Features:**
+- ✨ Edit any template with live preview
+- ➕ Create new custom templates
+- 🔄 Reset to default anytime
+- 🗑️ Delete custom templates
+- 💾 Auto-saves and reloads instantly
+
+**Your customizations are stored in:**
+```
+.askbob/quick-actions/
+```
+
+All customizations are automatically git-ignored by default. Perfect for personal preferences!
+
+**Learn more:** See [📘 User Guide](./docs/user-guide/CUSTOMIZING_TEMPLATES.md) • [🏗️ Architecture](./docs/technical/TEMPLATE_ARCHITECTURE.md) • [📚 All Docs](./docs/)
+
 ---
 
 ## 📦 Installation
@@ -209,9 +237,13 @@ Copy, paste, send. Works everywhere. ✅
 ```
 
 ### Tip 2: Custom Templates
-Edit `src/config/ai-clis.js` to add your own quick actions:
-```javascript
-{ label: '🎨 Convert to TypeScript', prompt: 'Convert this to TypeScript' }
+Use the Visual Editor to create your own quick actions:
+```bash
+1. Press Ctrl+Shift+P → "Bob AI: Edit Quick Action Prompts"
+2. Choose "🎨 Open Visual Editor"
+3. Click "➕ Create New Template"
+4. Add your custom prompt (e.g., "Convert to TypeScript")
+5. Use it instantly in Quick Actions!
 ```
 
 ### Tip 3: Tech Spec Workflow
@@ -263,9 +295,9 @@ vsce package
 - [x] VS Code Marketplace
 - [x] Streamlined command set (6 core commands)
 - [x] Sound effects with customizable settings
+- [x] Custom template UI with visual editor
 
 **🚧 Coming Soon:**
-- [ ] Custom template UI
 - [ ] Multi-file references
 - [ ] Response preview in editor
 - [ ] Claude Code skills integration

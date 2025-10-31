@@ -98,6 +98,10 @@
       {
         "command": "ask-ai-cli.toggleSound",
         "title": "Bob AI: Toggle Sound Effects"
+      },
+      {
+        "command": "ask-ai-cli.editTemplates",
+        "title": "Bob AI: Edit Quick Action Prompts"
       }
     ],
     "submenus": [
@@ -210,6 +214,9 @@
         },
         {
           "command": "ask-ai-cli.toggleSound"
+        },
+        {
+          "command": "ask-ai-cli.editTemplates"
         }
       ]
     },
