@@ -169,6 +169,8 @@ Bob AI lets you customize all Quick Action prompts to match your workflow! Edit 
 - 🗑️ Delete custom templates
 - 💾 Auto-saves and reloads instantly
 
+![alt text](edit-prompt-visual-editor-preview.png)
+
 **Your customizations are stored in:**
 ```
 .askbob/quick-actions/
