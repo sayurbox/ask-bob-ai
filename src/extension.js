@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const { registerCommands } = require('./commands');
 const { AICodeActionProvider } = require('./providers/code-action-provider');
 const { setupTerminalListeners } = require('./services/terminal-manager');
+const { initializeFileWatcher, dispose: disposeTemplateLoader } = require('./services/template-loader');
 
 // Store extension path for use by utilities
 let extensionPath = '';
@@ -41,6 +42,10 @@ function activate(context) {
     context.subscriptions.push(codeActionProvider);
     console.log('Code Action Provider registered');
 
+    // Initialize template file watcher for quick actions
+    initializeFileWatcher(context);
+    console.log('Template file watcher initialized');
+
     // Register all commands
     registerCommands(context);
 }
@@ -48,7 +53,10 @@ function activate(context) {
 /**
  * Deactivate the extension
  */
-function deactivate() {}
+function deactivate() {
+    // Dispose template loader resources
+    disposeTemplateLoader();
+}
 
 module.exports = {
     activate,

@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { QUICK_ACTIONS } = require('../config/ai-clis');
+const { getTemplates } = require('../services/template-loader');
 
 /**
  * Code Action Provider for inline AI suggestions (lightbulb icon)
@@ -16,8 +16,11 @@ class AICodeActionProvider {
 
         const codeActions = [];
 
+        // Get templates (from workspace or defaults)
+        const templates = getTemplates();
+
         // Add each quick action as a code action
-        QUICK_ACTIONS.forEach(action => {
+        templates.forEach(action => {
             if (!action.prompt || action.prompt === 'CUSTOM') {
                 return; // Skip separator and custom
             }

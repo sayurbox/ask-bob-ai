@@ -7,7 +7,10 @@
       "Bash(git push:*)",
       "Bash(find:*)",
       "Bash(git restore:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git add:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

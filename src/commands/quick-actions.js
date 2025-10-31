@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { QUICK_ACTIONS } = require('../config/ai-clis');
+const { getTemplates } = require('../services/template-loader');
 const { generateCodeReference, generateCodeReferenceFromRange } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { playSuccessSound } = require('../utils/sound');
@@ -22,8 +22,11 @@ async function quickActionsCommand() {
         return;
     }
 
+    // Get templates (from workspace or defaults)
+    const templates = getTemplates();
+
     // Show quick pick menu with template options
-    const selected = await vscode.window.showQuickPick(QUICK_ACTIONS, {
+    const selected = await vscode.window.showQuickPick(templates, {
         placeHolder: 'Choose an action or select custom prompt',
         matchOnDescription: true
     });
@@ -60,18 +63,20 @@ async function quickActionsCommand() {
         return;
     }
 
-    // Combine prompt with code reference
-    const fullMessage = `${finalPrompt} ${codeReference} \\`;
+    // Combine prompt with code reference (auto-execute, no backslash needed)
+    const fullMessage = `${finalPrompt} ${codeReference}`;
 
     // Send to terminal
     try {
-        await sendToAITerminal(fullMessage);
+        const success = await sendToAITerminal(fullMessage);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
         }
     } catch (err) {
         console.error('Failed to send to terminal:', err);
@@ -104,18 +109,20 @@ async function executeQuickActionCommand(document, range, action) {
         finalPrompt = action.prompt;
     }
 
-    // Combine prompt with code reference
-    const fullMessage = `${finalPrompt} ${codeReference} \\`;
+    // Combine prompt with code reference (auto-execute, no backslash needed)
+    const fullMessage = `${finalPrompt} ${codeReference}`;
 
     // Send to terminal
     try {
-        await sendToAITerminal(fullMessage);
+        const success = await sendToAITerminal(fullMessage);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
         }
     } catch (err) {
         console.error('Failed to send to terminal:', err);

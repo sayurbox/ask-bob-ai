@@ -10,13 +10,15 @@ const { playSuccessSound } = require('../utils/sound');
  */
 async function sendToTerminalWithSound(message) {
     try {
-        await sendToTerminalWithSound(message);
+        const success = await sendToAITerminal(message);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
         }
     } catch (err) {
         console.error('Failed to send to terminal:', err);
@@ -163,38 +165,6 @@ If no ≥80 issues found, confirm code meets standards.`;
 }
 
 /**
- * Command: Deep Code Review (confidence-based filtering for high-quality feedback)
- */
-async function folderDeepReviewCommand(uri) {
-    const info = await getResourceInfo(uri);
-    if (!info) return;
-
-    const suffix = info.isDirectory ? '/' : '';
-
-    // Condensed expert code review prompt - works with all AI CLIs
-    const message = `Perform expert code review on ${info.displayPath}${suffix}
-
-Review against CLAUDE.md project guidelines for: imports, conventions, error handling, testing, naming.
-
-Identify bugs: logic errors, null handling, race conditions, security issues, performance problems.
-
-Assess quality: duplication, missing error handling, test coverage.
-
-CONFIDENCE SCORING (report only ≥80):
-- 80-89: High confidence - verified real issue, impacts functionality or violates explicit guidelines
-- 90-100: Certain - confirmed critical issue, happens frequently
-
-OUTPUT FORMAT:
-1. State review scope
-2. Group by severity (Critical/Important)
-3. Per issue: confidence score, file:line, guideline reference/bug explanation, concrete fix
-
-If no ≥80 issues found, confirm code meets standards.`;
-
-    await sendToAITerminal(message);
-}
-
-/**
  * Command: File/Folder Operations
  */
 async function folderOperationsCommand(uri) {
@@ -210,7 +180,7 @@ async function folderOperationsCommand(uri) {
     ];
 
     const selected = await vscode.window.showQuickPick(commands, {
-        placeHolder: 'Select an action',
+        placeHolder: 'Bob AI: Actions',
     });
 
     if (selected) {
