@@ -165,6 +165,38 @@ If no ≥80 issues found, confirm code meets standards.`;
 }
 
 /**
+ * Command: Deep Code Review (confidence-based filtering for high-quality feedback)
+ */
+async function folderDeepReviewCommand(uri) {
+    const info = await getResourceInfo(uri);
+    if (!info) return;
+
+    const suffix = info.isDirectory ? '/' : '';
+
+    // Condensed expert code review prompt - works with all AI CLIs
+    const message = `Perform expert code review on ${info.displayPath}${suffix}
+
+Review against CLAUDE.md project guidelines for: imports, conventions, error handling, testing, naming.
+
+Identify bugs: logic errors, null handling, race conditions, security issues, performance problems.
+
+Assess quality: duplication, missing error handling, test coverage.
+
+CONFIDENCE SCORING (report only ≥80):
+- 80-89: High confidence - verified real issue, impacts functionality or violates explicit guidelines
+- 90-100: Certain - confirmed critical issue, happens frequently
+
+OUTPUT FORMAT:
+1. State review scope
+2. Group by severity (Critical/Important)
+3. Per issue: confidence score, file:line, guideline reference/bug explanation, concrete fix
+
+If no ≥80 issues found, confirm code meets standards.`;
+
+    await sendToAITerminal(message);
+}
+
+/**
  * Command: File/Folder Operations
  */
 async function folderOperationsCommand(uri) {
