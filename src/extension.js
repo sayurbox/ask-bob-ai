@@ -3,6 +3,7 @@ const { registerCommands } = require('./commands');
 const { AICodeActionProvider } = require('./providers/code-action-provider');
 const { setupTerminalListeners } = require('./services/terminal-manager');
 const { initializeFileWatcher, dispose: disposeTemplateLoader } = require('./services/template-loader');
+const { initializeFolderFileWatcher, dispose: disposeFolderTemplateLoader } = require('./services/folder-template-loader');
 
 // Store extension path for use by utilities
 let extensionPath = '';
@@ -46,6 +47,10 @@ function activate(context) {
     initializeFileWatcher(context);
     console.log('Template file watcher initialized');
 
+    // Initialize folder template file watcher
+    initializeFolderFileWatcher(context);
+    console.log('Folder template file watcher initialized');
+
     // Register all commands
     registerCommands(context);
 }
@@ -56,6 +61,7 @@ function activate(context) {
 function deactivate() {
     // Dispose template loader resources
     disposeTemplateLoader();
+    disposeFolderTemplateLoader();
 }
 
 module.exports = {

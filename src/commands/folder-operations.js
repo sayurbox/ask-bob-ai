@@ -3,6 +3,7 @@ const path = require('path');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { getRelativePath } = require('../utils/path-utils');
 const { playSuccessSound } = require('../utils/sound');
+const { getFolderTemplates, replaceVariables } = require('../services/folder-template-loader');
 
 /**
  * Helper function to send to terminal and play success sound
@@ -221,6 +222,77 @@ async function folderOperationsCommand(uri) {
 }
 
 /**
+ * Command: Folder Quick Actions (Template-based)
+ * Uses dynamic templates from templates/folder-actions/ and .askbob/folder-actions/
+ */
+async function folderQuickActionsCommand(uri) {
+    const info = await getResourceInfo(uri);
+    if (!info) return;
+
+    // Get templates
+    const templates = getFolderTemplates();
+
+    // Show quick pick menu with template options
+    const selected = await vscode.window.showQuickPick(templates, {
+        placeHolder: 'Bob AI: Choose an action',
+        matchOnDescription: true
+    });
+
+    // User cancelled
+    if (!selected || !selected.prompt) {
+        return;
+    }
+
+    // Replace template variables
+    const context = {
+        path: info.displayPath,
+        type: info.isDirectory ? 'module' : 'file',
+        isDirectory: info.isDirectory
+    };
+
+    const message = replaceVariables(selected.prompt, context);
+
+    // Send to terminal
+    await sendToTerminalWithSound(message);
+}
+
+/**
+ * Command: Copy code reference for file or folder
+ */
+async function folderCopyReferenceCommand(uri) {
+    const info = await getResourceInfo(uri);
+    if (!info) return;
+
+    // Generate reference
+    let reference;
+    if (info.isDirectory) {
+        // For folders, add trailing slash
+        reference = `@${info.displayPath}/`;
+    } else {
+        // For files, just the path
+        reference = `@${info.displayPath}`;
+    }
+
+    try {
+        // Copy to clipboard
+        await vscode.env.clipboard.writeText(reference);
+
+        // Show success message
+        const resourceType = info.isDirectory ? 'folder' : 'file';
+        vscode.window.showInformationMessage(`Copied ${resourceType} reference: ${reference}`);
+
+        // Play success sound
+        try {
+            await playSuccessSound();
+        } catch (soundErr) {
+            console.warn('Failed to play success sound:', soundErr.message);
+        }
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to copy reference: ${error.message}`);
+    }
+}
+
+/**
  * Command: Show structure (for folders) or file info (for files)
  */
 async function folderListFilesCommand(uri) {
@@ -331,5 +403,7 @@ module.exports = {
     folderDocumentCommand,
     folderRefactorCommand,
     folderListFilesCommand,
-    folderOperationsCommand
+    folderOperationsCommand,
+    folderQuickActionsCommand,
+    folderCopyReferenceCommand
 };

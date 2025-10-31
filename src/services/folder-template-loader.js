@@ -2,32 +2,28 @@ const fs = require('fs');
 const path = require('path');
 const vscode = require('vscode');
 
-// Default fallback templates (with {{code}} variable)
-const DEFAULT_TEMPLATES = [
-    { label: '🔍 Explain this code', prompt: 'Explain this code: {{code}}', kind: 'quickfix' },
-    { label: '🐛 Find and fix bugs', prompt: 'Find and fix bugs in this code: {{code}}', kind: 'quickfix' },
-    { label: '♻️ Refactor this code', prompt: 'Refactor this code for better readability and maintainability: {{code}}', kind: 'refactor' },
-    { label: '✅ Write unit tests', prompt: 'Write unit tests for this code: {{code}}', kind: 'quickfix' },
-    { label: '📝 Add documentation', prompt: 'Add detailed comments and documentation to this code: {{code}}', kind: 'quickfix' },
-    { label: '⚡ Optimize performance', prompt: 'Optimize this code for better performance: {{code}}', kind: 'refactor' },
-    { label: '🔒 Security review', prompt: 'Review this code for security vulnerabilities: {{code}}', kind: 'quickfix' },
-    { label: '🎯 Simplify logic', prompt: 'Simplify this code logic: {{code}}', kind: 'refactor' },
-    { label: '─────────────────────', prompt: null }, // Separator
-    { label: '✏️ Custom prompt...', prompt: 'CUSTOM', kind: 'quickfix' }
+// Default fallback templates for folder operations
+const DEFAULT_FOLDER_TEMPLATES = [
+    { label: '📖 Explain This', prompt: 'Explain the purpose and structure of this {{type}}: {{path}}', kind: 'info' },
+    { label: '🔍 Review Code', prompt: 'Review the code in this {{type}} and provide feedback: {{path}}', kind: 'review' },
+    { label: '🐛 Find Bugs', prompt: 'Analyze this {{type}} for potential bugs and issues: {{path}}', kind: 'review' },
+    { label: '✅ Generate Tests', prompt: 'Generate test files for this {{type}}: {{path}}', kind: 'refactor' },
+    { label: '📝 Add Documentation', prompt: 'Add documentation for this {{type}}: {{path}}', kind: 'refactor' },
+    { label: '♻️ Refactor', prompt: 'Suggest refactoring improvements for this {{type}}: {{path}}', kind: 'refactor' }
 ];
 
 // Cache for loaded templates
-let cachedTemplates = null;
+let cachedFolderTemplates = null;
 
 /**
  * Parse markdown file with frontmatter
  * Format:
  * ---
- * label: 🔍 Explain
- * kind: quickfix
+ * label: 📖 Explain
+ * kind: info
  * enabled: true
  * ---
- * Prompt content here
+ * Prompt content here with {{variables}}
  */
 function parseTemplate(filePath) {
     try {
@@ -65,7 +61,7 @@ function parseTemplate(filePath) {
         return {
             label: metadata.label || path.basename(filePath, '.md'),
             prompt: prompt,
-            kind: metadata.kind || 'quickfix'
+            kind: metadata.kind || 'info'
         };
     } catch (err) {
         console.error(`Failed to parse template ${filePath}:`, err);
@@ -115,7 +111,7 @@ function loadFromDirectory(dir, metadata = {}) {
  */
 function loadExtensionDefaults() {
     const extensionPath = require('../extension').getExtensionPath();
-    const templatesDir = path.join(extensionPath, 'templates', 'quick-actions');
+    const templatesDir = path.join(extensionPath, 'templates', 'folder-actions');
 
     return loadFromDirectory(templatesDir, {
         isCustom: false,
@@ -134,7 +130,7 @@ function loadUserCustoms() {
     }
 
     const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    const userTemplatesDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
+    const userTemplatesDir = path.join(workspaceRoot, '.askbob', 'folder-actions');
 
     return loadFromDirectory(userTemplatesDir, {
         isCustom: true,
@@ -165,33 +161,33 @@ function mergeTemplates(defaults, customs) {
 }
 
 /**
- * Get templates with full metadata (for editing UI)
+ * Get folder action templates with full metadata (for editing UI)
  * Priority: .askbob/ > templates/
  */
-function getTemplatesWithMetadata() {
+function getFolderTemplatesWithMetadata() {
     const extensionDefaults = loadExtensionDefaults();
     const userCustoms = loadUserCustoms();
 
     // Merge with user overrides
     const merged = mergeTemplates(extensionDefaults, userCustoms);
 
-    console.log(`Loaded ${merged.length} templates (${userCustoms.length} custom, ${extensionDefaults.length} defaults)`);
+    console.log(`Loaded ${merged.length} folder templates (${userCustoms.length} custom, ${extensionDefaults.length} defaults)`);
 
     return merged;
 }
 
 /**
- * Get quick action templates (simple format for Quick Pick)
+ * Get folder action templates (simple format for Quick Pick)
  * Priority: .askbob/ > templates/ > hardcoded defaults
  */
-function getTemplates() {
+function getFolderTemplates() {
     // Return cached templates if available
-    if (cachedTemplates) {
-        return cachedTemplates;
+    if (cachedFolderTemplates) {
+        return cachedFolderTemplates;
     }
 
     // Load with metadata
-    const templatesWithMetadata = getTemplatesWithMetadata();
+    const templatesWithMetadata = getFolderTemplatesWithMetadata();
 
     // If we have templates from files, use them
     if (templatesWithMetadata.length > 0) {
@@ -202,33 +198,52 @@ function getTemplates() {
             kind: t.kind
         }));
 
-        // Add separator and custom prompt option
-        templates.push({ label: '─────────────────────', prompt: null });
-        templates.push({ label: '✏️ Custom prompt...', prompt: 'CUSTOM', kind: 'quickfix' });
-
-        cachedTemplates = templates;
+        cachedFolderTemplates = templates;
         return templates;
     }
 
     // Fall back to hardcoded defaults
-    console.log('No template files found, using hardcoded defaults');
-    cachedTemplates = DEFAULT_TEMPLATES;
-    return DEFAULT_TEMPLATES;
+    console.log('No folder template files found, using hardcoded defaults');
+    cachedFolderTemplates = DEFAULT_FOLDER_TEMPLATES;
+    return DEFAULT_FOLDER_TEMPLATES;
 }
 
 /**
  * Reload templates (clear cache)
  */
-function reloadTemplates() {
-    cachedTemplates = null;
-    return getTemplates();
+function reloadFolderTemplates() {
+    cachedFolderTemplates = null;
+    return getFolderTemplates();
+}
+
+/**
+ * Replace template variables with actual values
+ * @param {string} prompt - Template prompt with {{variables}}
+ * @param {object} context - Context data (path, type, etc.)
+ * @returns {string} Prompt with variables replaced
+ */
+function replaceVariables(prompt, context) {
+    let result = prompt;
+
+    // Replace {{type}} with "module" or "file"
+    result = result.replace(/\{\{type\}\}/g, context.type || 'module');
+
+    // Replace {{path}} with display path
+    result = result.replace(/\{\{path\}\}/g, context.path || '');
+
+    // Add trailing slash for directories
+    if (context.isDirectory && context.path) {
+        result = result.replace(context.path, context.path + '/');
+    }
+
+    return result;
 }
 
 /**
  * Initialize template file watcher
- * Watches both templates/ and .askbob/quick-actions/ directories
+ * Watches .askbob/folder-actions/ directory
  */
-function initializeFileWatcher(context) {
+function initializeFolderFileWatcher(context) {
     const workspaceFolders = vscode.workspace.workspaceFolders;
 
     if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -239,27 +254,13 @@ function initializeFileWatcher(context) {
 
     // Reload on any change
     const reloadOnChange = () => {
-        console.log('Quick action templates changed, reloading...');
-        reloadTemplates();
-        vscode.window.showInformationMessage('Quick action templates reloaded');
+        console.log('Folder action templates changed, reloading...');
+        reloadFolderTemplates();
+        vscode.window.showInformationMessage('Folder action templates reloaded');
     };
 
-    // Watch templates/quick-actions/ (if exists)
-    const templatesDir = path.join(workspaceRoot, 'templates', 'quick-actions');
-    if (fs.existsSync(templatesDir)) {
-        const templatesPattern = new vscode.RelativePattern(templatesDir, '*.md');
-        const templatesWatcher = vscode.workspace.createFileSystemWatcher(templatesPattern);
-
-        templatesWatcher.onDidCreate(reloadOnChange);
-        templatesWatcher.onDidChange(reloadOnChange);
-        templatesWatcher.onDidDelete(reloadOnChange);
-
-        context.subscriptions.push(templatesWatcher);
-        console.log('Watching templates/quick-actions/');
-    }
-
-    // Watch .askbob/quick-actions/ (if exists)
-    const askbobDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
+    // Watch .askbob/folder-actions/ (if exists)
+    const askbobDir = path.join(workspaceRoot, '.askbob', 'folder-actions');
     if (fs.existsSync(askbobDir)) {
         const askbobPattern = new vscode.RelativePattern(askbobDir, '*.md');
         const askbobWatcher = vscode.workspace.createFileSystemWatcher(askbobPattern);
@@ -269,46 +270,24 @@ function initializeFileWatcher(context) {
         askbobWatcher.onDidDelete(reloadOnChange);
 
         context.subscriptions.push(askbobWatcher);
-        console.log('Watching .askbob/quick-actions/');
+        console.log('Watching .askbob/folder-actions/');
     }
 
-    console.log('Template file watchers initialized');
-}
-
-/**
- * Replace template variables with actual values
- * @param {string} prompt - Template prompt with {{variables}}
- * @param {object} context - Context data (code reference, etc.)
- * @returns {string} Prompt with variables replaced
- */
-function replaceVariables(prompt, context) {
-    let result = prompt;
-
-    // Replace {{code}} with code reference
-    if (context.code) {
-        result = result.replace(/\{\{code\}\}/g, context.code);
-    }
-
-    // If no {{code}} variable found, append code reference at the end (backward compatibility)
-    if (!prompt.includes('{{code}}') && context.code) {
-        result = `${result} ${context.code}`;
-    }
-
-    return result;
+    console.log('Folder template file watchers initialized');
 }
 
 /**
  * Dispose resources
  */
 function dispose() {
-    cachedTemplates = null;
+    cachedFolderTemplates = null;
 }
 
 module.exports = {
-    getTemplates,
-    getTemplatesWithMetadata,
-    reloadTemplates,
+    getFolderTemplates,
+    getFolderTemplatesWithMetadata,
+    reloadFolderTemplates,
     replaceVariables,
-    initializeFileWatcher,
+    initializeFolderFileWatcher,
     dispose
 };

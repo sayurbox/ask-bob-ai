@@ -13,10 +13,13 @@ const {
     folderDocumentCommand,
     folderRefactorCommand,
     folderListFilesCommand,
-    folderOperationsCommand
+    folderOperationsCommand,
+    folderQuickActionsCommand,
+    folderCopyReferenceCommand
 } = require('./folder-operations');
 const { toggleSoundCommand } = require('./toggle-sound');
 const { editTemplatesCommand } = require('./edit-templates');
+const { editFolderTemplatesCommand } = require('./edit-folder-templates');
 const { showAICLIPicker } = require('../services/terminal-manager');
 
 /**
@@ -39,8 +42,17 @@ function registerCommands(context) {
     // Quick actions (template prompts)
     const quickActions = vscode.commands.registerCommand(
         'ask-ai-cli.quickActions',
-        quickActionsCommand
+        async (...args) => {
+            try {
+                console.log('🚀 Executing quickActions command');
+                await quickActionsCommand(...args);
+            } catch (error) {
+                console.error('❌ Error in quickActions:', error);
+                vscode.window.showErrorMessage(`Quick Actions error: ${error.message}`);
+            }
+        }
     );
+    console.log('✅ Registered command: ask-ai-cli.quickActions');
 
     // Execute quick action (from code action provider)
     const executeQuickAction = vscode.commands.registerCommand(
@@ -117,6 +129,18 @@ function registerCommands(context) {
         folderOperationsCommand
     );
 
+    // Folder Quick Actions (template-based)
+    const folderQuickActions = vscode.commands.registerCommand(
+        'ask-ai-cli.folderQuickActions',
+        folderQuickActionsCommand
+    );
+
+    // Copy folder/file reference
+    const folderCopyReference = vscode.commands.registerCommand(
+        'ask-ai-cli.folderCopyReference',
+        folderCopyReferenceCommand
+    );
+
     // Toggle sound effects
     const toggleSound = vscode.commands.registerCommand(
         'ask-ai-cli.toggleSound',
@@ -127,6 +151,12 @@ function registerCommands(context) {
     const editTemplates = vscode.commands.registerCommand(
         'ask-ai-cli.editTemplates',
         editTemplatesCommand
+    );
+
+    // Edit folder templates
+    const editFolderTemplates = vscode.commands.registerCommand(
+        'ask-ai-cli.editFolderTemplates',
+        editFolderTemplatesCommand
     );
 
     // Add all commands to subscriptions
@@ -147,9 +177,14 @@ function registerCommands(context) {
         folderRefactor,
         folderListFiles,
         folderOperations,
+        folderQuickActions,
+        folderCopyReference,
         toggleSound,
-        editTemplates
+        editTemplates,
+        editFolderTemplates
     );
+
+    console.log('✅ All commands registered successfully! Total:', context.subscriptions.length);
 }
 
 module.exports = {
