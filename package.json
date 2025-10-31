@@ -109,13 +109,17 @@
     "menus": {
       "explorer/context": [
         {
-          "when": "resourceExtname == .md",
-          "command": "ask-ai-cli.executePlan",
+          "command": "ask-ai-cli.startAICLI",
           "group": "askAiCli@1"
         },
         {
           "submenu": "askAiCli.folder",
           "group": "askAiCli@2"
+        },
+        {
+          "when": "resourceExtname == .md",
+          "command": "ask-ai-cli.executePlan",
+          "group": "askAiCli@3"
         }
       ],
       "askAiCli.folder": [

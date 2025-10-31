@@ -33,13 +33,15 @@ async function sendToTerminalCommand() {
 
     // Send to AI CLI terminal
     try {
-        await sendToAITerminal(terminalText);
+        const success = await sendToAITerminal(terminalText);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
         }
     } catch (err) {
         console.error('Failed to send to terminal:', err);

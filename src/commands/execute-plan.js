@@ -58,13 +58,15 @@ async function executePlanCommand(uri) {
 
         // Send to terminal
         try {
-            await sendToAITerminal(fullPrompt);
+            const success = await sendToAITerminal(fullPrompt);
 
-            // Play success sound after command completion
-            try {
-                await playSuccessSound();
-            } catch (soundErr) {
-                console.warn('Failed to play success sound:', soundErr.message);
+            // Only play success sound if terminal send was successful
+            if (success) {
+                try {
+                    await playSuccessSound();
+                } catch (soundErr) {
+                    console.warn('Failed to play success sound:', soundErr.message);
+                }
             }
 
             vscode.window.showInformationMessage(
@@ -118,13 +120,15 @@ async function executePlanCommand(uri) {
 
         // Send to terminal
         try {
-            await sendToAITerminal(fullPrompt);
+            const success = await sendToAITerminal(fullPrompt);
 
-            // Play success sound after command completion
-            try {
-                await playSuccessSound();
-            } catch (soundErr) {
-                console.warn('Failed to play success sound:', soundErr.message);
+            // Only play success sound if terminal send was successful
+            if (success) {
+                try {
+                    await playSuccessSound();
+                } catch (soundErr) {
+                    console.warn('Failed to play success sound:', soundErr.message);
+                }
             }
 
             vscode.window.showInformationMessage(
@@ -165,13 +169,15 @@ async function executePlanCommand(uri) {
 
         // Send to terminal
         try {
-            await sendToAITerminal(fullPrompt);
+            const success = await sendToAITerminal(fullPrompt);
 
-            // Play success sound after command completion
-            try {
-                await playSuccessSound();
-            } catch (soundErr) {
-                console.warn('Failed to play success sound:', soundErr.message);
+            // Only play success sound if terminal send was successful
+            if (success) {
+                try {
+                    await playSuccessSound();
+                } catch (soundErr) {
+                    console.warn('Failed to play success sound:', soundErr.message);
+                }
             }
 
             vscode.window.showInformationMessage('Implementation started from inline plan!');

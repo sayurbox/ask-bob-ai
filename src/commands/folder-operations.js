@@ -10,13 +10,15 @@ const { playSuccessSound } = require('../utils/sound');
  */
 async function sendToTerminalWithSound(message) {
     try {
-        await sendToTerminalWithSound(message);
+        const success = await sendToAITerminal(message);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
         }
     } catch (err) {
         console.error('Failed to send to terminal:', err);
@@ -210,7 +212,7 @@ async function folderOperationsCommand(uri) {
     ];
 
     const selected = await vscode.window.showQuickPick(commands, {
-        placeHolder: 'Select an action',
+        placeHolder: 'Bob AI: Actions',
     });
 
     if (selected) {

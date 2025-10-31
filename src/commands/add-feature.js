@@ -117,18 +117,20 @@ async function addFeatureCommand(uri) {
 
     // Send to terminal
     try {
-        await sendToAITerminal(fullPrompt);
+        const success = await sendToAITerminal(fullPrompt);
 
-        // Play success sound after command completion
-        try {
-            await playSuccessSound();
-        } catch (soundErr) {
-            console.warn('Failed to play success sound:', soundErr.message);
+        // Only play success sound if terminal send was successful
+        if (success) {
+            try {
+                await playSuccessSound();
+            } catch (soundErr) {
+                console.warn('Failed to play success sound:', soundErr.message);
+            }
+
+            vscode.window.showInformationMessage(
+                `Tech spec research started! Bob AI will create: /research/research-${safeFileName}.md`
+            );
         }
-
-        vscode.window.showInformationMessage(
-            `Tech spec research started! Bob AI will create: /research/research-${safeFileName}.md`
-        );
     } catch (err) {
         console.error('Failed to send to terminal:', err);
         vscode.window.showErrorMessage('Failed to start tech spec research');

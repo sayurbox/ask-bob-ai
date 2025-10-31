@@ -311,13 +311,12 @@ async function sendToAITerminal(text) {
             return false;
         }
 
-        let formattedText = text;
+        // Strip trailing backslash and whitespace for all CLIs (prevents manual Enter)
+        let formattedText = text.replace(/\s*\\+\s*$/, '').trim();
         let addNewline = true;
 
         // Gemini CLI: Use clipboard + auto-paste approach as sendText may not work
         if (cliType === 'gemini') {
-            // Strip trailing backslash and whitespace if present
-            formattedText = text.replace(/\s*\\+\s*$/, '').trim();
 
             // Copy to clipboard
             await vscode.env.clipboard.writeText(formattedText);
@@ -346,7 +345,14 @@ async function sendToAITerminal(text) {
         }
 
         // For Claude and other CLIs, use sendText
-        aiTerminal.sendText(formattedText, addNewline);
+        // Send text first, then explicitly send Enter for auto-execution
+        aiTerminal.sendText(formattedText, false);
+
+        if (addNewline) {
+            // Small delay to ensure text is sent before Enter
+            await new Promise(resolve => setTimeout(resolve, 50));
+            aiTerminal.sendText('', true); // Send Enter
+        }
 
         const cliName = cliType === 'claude' ? 'Claude Code' : 'AI CLI';
         vscode.window.showInformationMessage(`Sent to ${cliName} terminal`);
