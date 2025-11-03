@@ -87,7 +87,7 @@ async function openVisualEditor() {
 
                 case 'create':
                     await createNewTemplate(message.data);
-                    vscode.window.showInformationMessage('✅ Template created');
+                    vscode.window.showInformationMessage('✅ Template created: ' + message.data.label);
                     reloadTemplates();
                     const newTemplates = getTemplatesWithMetadata();
                     panel.webview.postMessage({
@@ -100,10 +100,10 @@ async function openVisualEditor() {
                     await deleteTemplate(message.data.filename);
                     vscode.window.showInformationMessage('✅ Template deleted');
                     reloadTemplates();
-                    const remainingTemplates = getTemplatesWithMetadata();
+                    const deletedTemplates = getTemplatesWithMetadata();
                     panel.webview.postMessage({
                         command: 'templates',
-                        data: remainingTemplates
+                        data: deletedTemplates
                     });
                     break;
 
@@ -120,13 +120,13 @@ async function openVisualEditor() {
             }
         } catch (error) {
             vscode.window.showErrorMessage(`Error: ${error.message}`);
-            console.error('WebView message handler error:', error);
+            console.error(error);
         }
     });
 }
 
 /**
- * Edit files directly in editor
+ * Edit files directly
  */
 async function editFilesDirectly() {
     if (!await ensureWorkspace()) return;
@@ -134,119 +134,93 @@ async function editFilesDirectly() {
     const templates = getTemplatesWithMetadata();
 
     if (templates.length === 0) {
-        vscode.window.showInformationMessage('No templates found. Extension defaults will be used.');
+        vscode.window.showInformationMessage('No templates found. Using defaults.');
         return;
     }
 
-    const selected = await vscode.window.showQuickPick(
-        templates.map(t => ({
-            label: t.label,
-            description: t.isCustom ? '✏️ Custom' : '📦 Default',
-            detail: t.prompt.substring(0, 100) + (t.prompt.length > 100 ? '...' : ''),
-            template: t
-        })),
-        { placeHolder: 'Select template to edit' }
-    );
+    // Show template picker
+    const items = templates.map(t => ({
+        label: t.label,
+        description: t.isCustom ? '✏️ Custom' : '📦 Default',
+        detail: t.path,
+        template: t
+    }));
+
+    const selected = await vscode.window.showQuickPick(items, {
+        placeHolder: 'Select a template to edit'
+    });
 
     if (!selected) return;
 
-    // Copy to .askbob if editing default
-    const filePath = await copyToUserSpace(selected.template);
+    let editPath = selected.template.path;
+
+    // If default template, copy to user space first
+    if (!selected.template.isCustom) {
+        editPath = await copyToUserSpace(selected.template);
+    }
 
     // Open in editor
-    const doc = await vscode.workspace.openTextDocument(filePath);
+    const doc = await vscode.workspace.openTextDocument(editPath);
     await vscode.window.showTextDocument(doc);
 }
 
 /**
- * Open .askbob folder
+ * Open templates folder
  */
 async function openTemplatesFolder() {
     if (!await ensureWorkspace()) return;
 
+    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const templatesDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
+
     await ensureAskbobFolder();
 
-    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    const folder = path.join(workspaceRoot, '.askbob', 'quick-actions');
-
-    await vscode.commands.executeCommand(
-        'revealFileInOS',
-        vscode.Uri.file(folder)
-    );
+    // Open in file explorer
+    const uri = vscode.Uri.file(templatesDir);
+    await vscode.commands.executeCommand('revealFileInOS', uri);
 }
 
 /**
- * Copy template to user space (.askbob/) if not already there
+ * Copy extension default template to user space
  */
 async function copyToUserSpace(template) {
     const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const userPath = path.join(workspaceRoot, '.askbob', 'quick-actions', template.filename);
 
+    // Already exists in user space?
     if (fs.existsSync(userPath)) {
-        return userPath; // Already copied
+        return userPath;
     }
 
-    // Copy from extension to .askbob
+    // First edit: Copy to .askbob
     await ensureAskbobFolder();
     fs.copyFileSync(template.path, userPath);
 
     vscode.window.showInformationMessage(
-        `📝 Copied to .askbob/ for editing. Original preserved.`
+        '📝 Copied to .askbob/quick-actions/ for editing. Original preserved.'
     );
 
     return userPath;
 }
 
 /**
- * Ensure .askbob/quick-actions/ folder exists
- */
-async function ensureAskbobFolder() {
-    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    const askbobDir = path.join(workspaceRoot, '.askbob', 'quick-actions');
-
-    if (!fs.existsSync(askbobDir)) {
-        fs.mkdirSync(askbobDir, { recursive: true });
-
-        // Create .gitignore
-        const gitignore = path.join(workspaceRoot, '.askbob', '.gitignore');
-        if (!fs.existsSync(gitignore)) {
-            fs.writeFileSync(gitignore, '# Bob AI CLI - User customizations\n# Remove this file to commit your templates\n*\n');
-        }
-
-        console.log('Created .askbob/quick-actions/ directory');
-    }
-}
-
-/**
- * Ensure workspace is open
- */
-async function ensureWorkspace() {
-    if (!vscode.workspace.workspaceFolders?.length) {
-        vscode.window.showErrorMessage(
-            'No workspace open. Open a folder to customize templates.'
-        );
-        return false;
-    }
-    return true;
-}
-
-/**
- * Save template to .askbob/
+ * Save template to .askbob/quick-actions/
  */
 async function saveTemplate(data) {
+    await ensureAskbobFolder();
+
     const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const filePath = path.join(workspaceRoot, '.askbob', 'quick-actions', data.filename);
 
-    await ensureAskbobFolder();
-
-    const content = `---
+    // Build frontmatter
+    const frontmatter = `---
 label: ${data.label}
 kind: ${data.kind}
 enabled: ${data.enabled}
 ---
 ${data.prompt}`;
 
-    fs.writeFileSync(filePath, content, 'utf8');
+    fs.writeFileSync(filePath, frontmatter, 'utf8');
     console.log(`Saved template: ${data.filename}`);
 }
 
@@ -278,6 +252,42 @@ async function resetToDefault(filename) {
 }
 
 /**
+ * Ensure .askbob/quick-actions/ exists
+ */
+async function ensureAskbobFolder() {
+    const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const askbobDir = path.join(workspaceRoot, '.askbob');
+    const templatesDir = path.join(askbobDir, 'quick-actions');
+
+    if (!fs.existsSync(askbobDir)) {
+        fs.mkdirSync(askbobDir, { recursive: true });
+    }
+
+    if (!fs.existsSync(templatesDir)) {
+        fs.mkdirSync(templatesDir, { recursive: true });
+    }
+
+    // Create .gitignore
+    const gitignorePath = path.join(askbobDir, '.gitignore');
+    if (!fs.existsSync(gitignorePath)) {
+        fs.writeFileSync(gitignorePath, '# Bob AI CLI customizations\n*\n', 'utf8');
+    }
+}
+
+/**
+ * Ensure workspace is open
+ */
+async function ensureWorkspace() {
+    if (!vscode.workspace.workspaceFolders?.length) {
+        vscode.window.showErrorMessage(
+            'No workspace open. Open a folder to customize templates.'
+        );
+        return false;
+    }
+    return true;
+}
+
+/**
  * Get WebView HTML
  */
 function getWebviewHTML() {
@@ -286,400 +296,237 @@ function getWebviewHTML() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Quick Actions</title>
+    <title>Quick Action Template Editor</title>
     <style>
-        body {
-            font-family: var(--vscode-font-family);
-            color: var(--vscode-foreground);
-            background: var(--vscode-editor-background);
-            padding: 20px;
-            margin: 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            margin-top: 0;
-            border-bottom: 1px solid var(--vscode-panel-border);
-            padding-bottom: 10px;
-        }
-
-        h2 {
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        .templates-list {
-            border: 1px solid var(--vscode-panel-border);
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .template-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--vscode-panel-border);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.1s;
-        }
-
-        .template-item:last-child {
-            border-bottom: none;
-        }
-
-        .template-item:hover {
-            background: var(--vscode-list-hoverBackground);
-        }
-
-        .template-item.selected {
-            background: var(--vscode-list-activeSelectionBackground);
-        }
-
-        .template-info {
-            flex: 1;
-        }
-
-        .template-label {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .template-preview {
-            font-size: 12px;
-            opacity: 0.7;
-        }
-
-        .badge {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: var(--vscode-badge-background);
-            color: var(--vscode-badge-foreground);
-        }
-
-        .editor-section {
-            border: 1px solid var(--vscode-panel-border);
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .editor-section.hidden {
-            display: none;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            padding: 8px 12px;
-            background: var(--vscode-input-background);
-            color: var(--vscode-input-foreground);
-            border: 1px solid var(--vscode-input-border);
-            border-radius: 4px;
-            font-family: var(--vscode-font-family);
-            margin-bottom: 16px;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-            font-family: var(--vscode-editor-font-family);
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-            font-weight: normal;
-        }
-
-        .checkbox-label input {
-            width: auto;
-            margin-right: 8px;
-            margin-bottom: 0;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: var(--vscode-button-background);
-            color: var(--vscode-button-foreground);
-        }
-
-        .btn-primary:hover {
-            background: var(--vscode-button-hoverBackground);
-        }
-
-        .btn-secondary {
-            background: var(--vscode-button-secondaryBackground);
-            color: var(--vscode-button-secondaryForeground);
-        }
-
-        .btn-secondary:hover {
-            background: var(--vscode-button-secondaryHoverBackground);
-        }
-
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #da190b;
-        }
-
-        .info {
-            padding: 12px;
-            background: var(--vscode-textBlockQuote-background);
-            border-left: 4px solid var(--vscode-textLink-foreground);
-            margin-top: 20px;
-            font-size: 13px;
-        }
-
-        .info code {
-            background: var(--vscode-textCodeBlock-background);
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            opacity: 0.7;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--vscode-font-family); color: var(--vscode-foreground); background: var(--vscode-editor-background); padding: 20px; font-size: 13px; }
+        .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .templates-list { border: 1px solid var(--vscode-panel-border); border-radius: 4px; overflow: hidden; }
+        .template-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--vscode-panel-border); transition: background 0.2s; }
+        .template-item:hover { background: var(--vscode-list-hoverBackground); }
+        .template-item.active { background: var(--vscode-list-activeSelectionBackground); color: var(--vscode-list-activeSelectionForeground); }
+        .template-item:last-child { border-bottom: none; }
+        .template-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-left: 8px; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
+        .editor-section { border: 1px solid var(--vscode-panel-border); border-radius: 4px; padding: 20px; }
+        .editor-section h2 { margin-bottom: 20px; font-size: 18px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 8px; background: var(--vscode-input-background); color: var(--vscode-input-foreground); border: 1px solid var(--vscode-input-border); border-radius: 3px; font-family: var(--vscode-font-family); font-size: 13px; }
+        .form-group textarea { min-height: 300px; font-family: var(--vscode-editor-font-family); resize: vertical; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: 1px solid var(--vscode-focusBorder); }
+        .form-group .hint { margin-top: 4px; font-size: 11px; color: var(--vscode-descriptionForeground); }
+        .checkbox-group { display: flex; align-items: center; }
+        .checkbox-group input { width: auto; margin-right: 8px; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
+        button { padding: 8px 16px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 3px; cursor: pointer; font-size: 13px; }
+        button:hover { background: var(--vscode-button-hoverBackground); }
+        button.secondary { background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
+        button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
+        button.danger { background: #c5372a; color: white; }
+        button.danger:hover { background: #a82d23; }
+        .create-new { margin-bottom: 20px; }
+        .variables-hint { background: var(--vscode-textCodeBlock-background); padding: 12px; border-radius: 3px; margin-top: 8px; font-family: var(--vscode-editor-font-family); font-size: 12px; }
+        .variables-hint strong { display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎨 Quick Action Prompt Editor</h1>
-
-        <h2>Templates</h2>
-        <div class="templates-list" id="templatesList">
-            <div class="empty-state">Loading templates...</div>
-        </div>
-
-        <div id="editorSection" class="editor-section hidden">
-            <h2>Edit Template</h2>
-
-            <label for="label">Label (with emoji)</label>
-            <input type="text" id="label" placeholder="🔍 Explain this code">
-
-            <label for="prompt">Prompt Text</label>
-            <textarea id="prompt" placeholder="Enter your prompt..."></textarea>
-
-            <label for="kind">Kind</label>
-            <select id="kind">
-                <option value="quickfix">Quick Fix</option>
-                <option value="refactor">Refactor</option>
-            </select>
-
-            <label class="checkbox-label">
-                <input type="checkbox" id="enabled" checked>
-                <span>Enabled</span>
-            </label>
-
-            <div class="buttons">
-                <button class="btn-primary" onclick="saveTemplate()">💾 Save</button>
-                <button class="btn-secondary" onclick="resetTemplate()">🔄 Reset to Default</button>
-                <button class="btn-danger" onclick="deleteTemplate()">🗑️ Delete</button>
+        <div>
+            <div class="create-new">
+                <button onclick="createNew()" style="width: 100%">➕ Create New Template</button>
             </div>
+            <div class="templates-list" id="templatesList">Loading...</div>
         </div>
-
-        <button class="btn-primary" onclick="createNew()">➕ Create New Template</button>
-
-        <div class="info">
-            💡 Changes are saved to <code>.askbob/quick-actions/</code> in your workspace.
-            Original defaults remain unchanged.
+        <div class="editor-section" id="editorSection">
+            <h2>Select a template to edit</h2>
+            <p style="color: var(--vscode-descriptionForeground);">Choose a template from the list on the left, or create a new one.</p>
         </div>
     </div>
-
     <script>
         const vscode = acquireVsCodeApi();
         let templates = [];
         let selectedTemplate = null;
+        let pendingSelectFilename = null;
 
-        // Request templates on load
         vscode.postMessage({ command: 'load' });
 
-        // Receive messages from extension
         window.addEventListener('message', event => {
             const message = event.data;
-
             if (message.command === 'templates') {
                 templates = message.data;
                 renderTemplates();
+
+                // Auto-select newly created template
+                if (pendingSelectFilename) {
+                    const index = templates.findIndex(t => t.filename === pendingSelectFilename);
+                    if (index !== -1) {
+                        selectTemplate(index);
+                    }
+                    pendingSelectFilename = null;
+                }
             }
         });
 
         function renderTemplates() {
             const list = document.getElementById('templatesList');
-
             if (templates.length === 0) {
-                list.innerHTML = '<div class="empty-state">No templates found. Extension defaults will be used.</div>';
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--vscode-descriptionForeground);">No templates found</div>';
                 return;
             }
-
-            list.innerHTML = templates.map((t, i) => \`
-                <div class="template-item" onclick="selectTemplate(\${i})" data-index="\${i}">
-                    <div class="template-info">
-                        <div class="template-label">\${escapeHtml(t.label)}</div>
-                        <div class="template-preview">\${escapeHtml(t.prompt.substring(0, 60))}\${t.prompt.length > 60 ? '...' : ''}</div>
-                    </div>
-                    <span class="badge">\${t.isCustom ? '✏️ Custom' : '📦 Default'}</span>
-                </div>
-            \`).join('');
+            list.innerHTML = templates.map((t, index) => {
+                const badge = t.isCustom ? '<span class="template-badge">✏️ Custom</span>' : '<span class="template-badge">📦 Default</span>';
+                return '<div class="template-item" onclick="selectTemplate(' + index + ')">' + t.label + ' ' + badge + '</div>';
+            }).join('');
         }
 
         function selectTemplate(index) {
             selectedTemplate = templates[index];
-
-            // Update UI
             document.querySelectorAll('.template-item').forEach((el, i) => {
-                el.classList.toggle('selected', i === index);
+                el.classList.toggle('active', i === index);
             });
-
-            // Show editor
-            document.getElementById('editorSection').classList.remove('hidden');
-
-            // Populate fields
-            document.getElementById('label').value = selectedTemplate.label;
-            document.getElementById('prompt').value = selectedTemplate.prompt;
-            document.getElementById('kind').value = selectedTemplate.kind || 'quickfix';
-            document.getElementById('enabled').checked = selectedTemplate.enabled !== false;
+            renderEditor();
         }
 
-        function saveTemplate() {
-            if (!selectedTemplate) {
-                alert('Please select a template first');
-                return;
-            }
+        function renderEditor() {
+            const editor = document.getElementById('editorSection');
+            const isCustom = selectedTemplate.isCustom;
+            const escapedLabel = selectedTemplate.label.replace(/"/g, '&quot;');
+            const escapedPrompt = selectedTemplate.prompt.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+            editor.innerHTML = '<h2>Edit Template: ' + selectedTemplate.label + '</h2>' +
+                '<form onsubmit="save(event)">' +
+                '<div class="form-group">' +
+                '<label for="label">Label (with emoji)</label>' +
+                '<input type="text" id="label" value="' + escapedLabel + '" required>' +
+                '<div class="hint">Display name shown in menu</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="kind">Kind</label>' +
+                '<select id="kind">' +
+                '<option value="quickfix"' + (selectedTemplate.kind === 'quickfix' ? ' selected' : '') + '>Quick Fix</option>' +
+                '<option value="refactor"' + (selectedTemplate.kind === 'refactor' ? ' selected' : '') + '>Refactor</option>' +
+                '</select>' +
+                '<div class="hint">Template category</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="prompt">Prompt Template</label>' +
+                '<textarea id="prompt" required>' + escapedPrompt + '</textarea>' +
+                '<div class="variables-hint"><strong>Available Variable:</strong>{{code}} - Selected code reference (e.g., @file.js#L10-15)</div>' +
+                '</div>' +
+                '<div class="form-group checkbox-group">' +
+                '<input type="checkbox" id="enabled"' + (selectedTemplate.enabled !== false ? ' checked' : '') + '>' +
+                '<label for="enabled">Show in menu</label>' +
+                '</div>' +
+                '<div class="button-group">' +
+                '<button type="submit">💾 Save Changes</button>' +
+                (!isCustom ? '<button type="button" class="secondary" onclick="copyToCustom()">✏️ Edit (Copy to Custom)</button>' : '') +
+                (isCustom ? '<button type="button" class="secondary" onclick="reset()">🔄 Reset to Default</button>' : '') +
+                (isCustom ? '<button type="button" class="danger" onclick="deleteTemplate()">🗑️ Delete</button>' : '') +
+                '</div>' +
+                '</form>';
+        }
+
+        function save(event) {
+            event.preventDefault();
             const data = {
                 filename: selectedTemplate.filename,
-                label: document.getElementById('label').value.trim(),
-                prompt: document.getElementById('prompt').value.trim(),
+                label: document.getElementById('label').value,
                 kind: document.getElementById('kind').value,
+                prompt: document.getElementById('prompt').value,
                 enabled: document.getElementById('enabled').checked
             };
-
-            if (!data.label) {
-                alert('Label is required');
-                return;
-            }
-
-            if (!data.prompt) {
-                alert('Prompt is required');
-                return;
-            }
-
             vscode.postMessage({ command: 'save', data });
         }
 
-        function resetTemplate() {
-            if (!selectedTemplate) {
-                alert('Please select a template first');
-                return;
-            }
+        function copyToCustom() {
+            const data = {
+                filename: selectedTemplate.filename,
+                label: document.getElementById('label').value,
+                kind: document.getElementById('kind').value,
+                prompt: document.getElementById('prompt').value,
+                enabled: document.getElementById('enabled').checked
+            };
+            vscode.postMessage({ command: 'save', data });
+        }
 
-            if (!selectedTemplate.isCustom) {
-                alert('Cannot reset default templates');
-                return;
-            }
-
-            if (!confirm(\`Reset "\${selectedTemplate.label}" to default? Your changes will be lost.\`)) {
-                return;
-            }
-
-            vscode.postMessage({
-                command: 'reset',
-                data: { filename: selectedTemplate.filename }
-            });
-
-            // Hide editor after reset
-            document.getElementById('editorSection').classList.add('hidden');
-            selectedTemplate = null;
+        function reset() {
+            if (!confirm('Reset this template to default? Your changes will be lost.')) return;
+            vscode.postMessage({ command: 'reset', data: { filename: selectedTemplate.filename } });
         }
 
         function deleteTemplate() {
-            if (!selectedTemplate) {
-                alert('Please select a template first');
-                return;
-            }
-
-            if (!selectedTemplate.isCustom) {
-                alert('Cannot delete default templates. They can only be overridden.');
-                return;
-            }
-
-            if (!confirm(\`Delete "\${selectedTemplate.label}"?\`)) {
-                return;
-            }
-
-            vscode.postMessage({
-                command: 'delete',
-                data: { filename: selectedTemplate.filename }
-            });
-
-            // Hide editor after delete
-            document.getElementById('editorSection').classList.add('hidden');
+            if (!confirm('Delete "' + selectedTemplate.label + '"? This cannot be undone.')) return;
+            vscode.postMessage({ command: 'delete', data: { filename: selectedTemplate.filename } });
             selectedTemplate = null;
+            document.getElementById('editorSection').innerHTML = '<h2>Template deleted</h2>';
         }
 
         function createNew() {
-            const name = prompt('Template filename (e.g., my-action):');
-            if (!name) return;
+            selectedTemplate = null;
+            const editor = document.getElementById('editorSection');
 
-            const filename = name.endsWith('.md') ? name : name + '.md';
+            editor.innerHTML = '<h2>Create New Template</h2>' +
+                '<form onsubmit="submitNewTemplate(event)">' +
+                '<div class="form-group">' +
+                '<label for="newFilename">Filename (without .md)</label>' +
+                '<input type="text" id="newFilename" placeholder="my-custom-action" required pattern="[a-z0-9-]+" title="Use lowercase letters, numbers, and hyphens only">' +
+                '<div class="hint">Only lowercase letters, numbers, and hyphens</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="newLabel">Label (with emoji)</label>' +
+                '<input type="text" id="newLabel" placeholder="🎯 My Custom Action" required>' +
+                '<div class="hint">Display name shown in menu</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="newKind">Kind</label>' +
+                '<select id="newKind">' +
+                '<option value="quickfix">Quick Fix</option>' +
+                '<option value="refactor">Refactor</option>' +
+                '</select>' +
+                '</div>' +
+                '<div class="form-group">' +
+                '<label for="newPrompt">Prompt Template</label>' +
+                '<textarea id="newPrompt" required>Custom prompt: {{code}}</textarea>' +
+                '<div class="variables-hint"><strong>Available Variable:</strong>{{code}} - Selected code reference (e.g., @file.js#L10-15)</div>' +
+                '</div>' +
+                '<div class="button-group">' +
+                '<button type="submit">✅ Create Template</button>' +
+                '<button type="button" class="secondary" onclick="cancelCreate()">❌ Cancel</button>' +
+                '</div>' +
+                '</form>';
 
-            // Check if filename already exists
-            if (templates.some(t => t.filename === filename)) {
-                alert('Template with this filename already exists');
-                return;
-            }
-
-            const label = prompt('Label (with emoji, e.g., 🎯 My Action):');
-            if (!label) return;
-
-            vscode.postMessage({
-                command: 'create',
-                data: {
-                    filename: filename,
-                    label: label,
-                    prompt: 'Your prompt here',
-                    kind: 'quickfix',
-                    enabled: true
-                }
-            });
+            // Focus on filename field
+            setTimeout(() => document.getElementById('newFilename').focus(), 100);
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function submitNewTemplate(event) {
+            event.preventDefault();
+
+            let filename = document.getElementById('newFilename').value.trim().toLowerCase();
+            const label = document.getElementById('newLabel').value.trim();
+            const kind = document.getElementById('newKind').value;
+            const prompt = document.getElementById('newPrompt').value.trim();
+
+            if (!filename || !label || !prompt) return;
+
+            const fullFilename = filename + '.md';
+            const data = {
+                filename: fullFilename,
+                label: label,
+                kind: kind,
+                prompt: prompt,
+                enabled: true
+            };
+
+            console.log('Creating new template:', data);
+            pendingSelectFilename = fullFilename;
+            vscode.postMessage({ command: 'create', data });
+        }
+
+        function cancelCreate() {
+            const editor = document.getElementById('editorSection');
+            editor.innerHTML = '<h2>Select a template to edit</h2>' +
+                '<p style="color: var(--vscode-descriptionForeground);">Choose a template from the list on the left, or create a new one.</p>';
         }
     </script>
 </body>

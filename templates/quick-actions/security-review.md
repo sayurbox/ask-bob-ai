@@ -3,4 +3,4 @@ label: 🔒 Security review
 kind: quickfix
 enabled: true
 ---
-Review this code for security vulnerabilities
+Review this code for security vulnerabilities: {{code}}

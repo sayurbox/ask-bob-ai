@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { getTemplates } = require('../services/template-loader');
+const { getTemplates, replaceVariables } = require('../services/template-loader');
 const { generateCodeReference, generateCodeReferenceFromRange } = require('../utils/code-reference');
 const { sendToAITerminal } = require('../services/terminal-manager');
 const { playSuccessSound } = require('../utils/sound');
@@ -63,8 +63,11 @@ async function quickActionsCommand() {
         return;
     }
 
-    // Combine prompt with code reference (auto-execute, no backslash needed)
-    const fullMessage = `${finalPrompt} ${codeReference}`;
+    // Replace template variables ({{code}} with code reference)
+    const context = {
+        code: codeReference
+    };
+    const fullMessage = replaceVariables(finalPrompt, context);
 
     // Send to terminal
     try {
@@ -109,8 +112,11 @@ async function executeQuickActionCommand(document, range, action) {
         finalPrompt = action.prompt;
     }
 
-    // Combine prompt with code reference (auto-execute, no backslash needed)
-    const fullMessage = `${finalPrompt} ${codeReference}`;
+    // Replace template variables ({{code}} with code reference)
+    const context = {
+        code: codeReference
+    };
+    const fullMessage = replaceVariables(finalPrompt, context);
 
     // Send to terminal
     try {

@@ -6,7 +6,7 @@
 
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.74.0+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Version](https://img.shields.io/badge/version-0.0.2-orange.svg)
+![Version](https://img.shields.io/badge/version-0.0.5-orange.svg)
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-brightgreen.svg)](https://marketplace.visualstudio.com/items?itemName=1031022.bob-ai-cli)
 
 *Select code. Hit a key. Let AI do the heavy lifting.*
@@ -57,18 +57,27 @@ Hit `Ctrl+K A` and choose:
 
 ## 📁 Folder Operations
 
-Right-click any folder in Explorer → **"Bob AI: Folder Operations"** and choose:
+Right-click any folder/file in Explorer → **"Bob AI: Actions"** for quick operations:
 
-- 📖 **Explain module** - Get AI explanation of folder structure & purpose
-- 🔍 **Review code** - Comprehensive code review of all files
+### ✨ Quick Actions (Template-based)
+Choose from customizable templates:
+- 📖 **Explain This** - Get AI explanation of folder structure & purpose
+- 🔍 **Review Code** - Comprehensive code review
 - 🔬 **Deep Code Review** - Expert review with confidence-based filtering (≥80 threshold)
-- 🐛 **Find bugs** - Analyze entire module for potential issues
-- ✅ **Generate tests** - Create test coverage for the module
-- 📝 **Document** - Generate or improve module documentation
-- ♻️ **Refactor** - Get refactoring suggestions for the whole module
-- 📂 **List files** - Show file tree preview + send to AI CLI
+- 🐛 **Find Bugs** - Analyze for potential issues
+- ✅ **Generate Tests** - Create test coverage
+- 📝 **Add Documentation** - Generate or improve documentation
+- ♻️ **Refactor** - Get refactoring suggestions
+- 📂 **Show Structure** - Show file tree + send to AI CLI
+
+### 📋 Copy Code Reference
+Copy clean references to folders or files:
+- **Folders:** `@src/components/`
+- **Files:** `@src/utils/helper.js`
 
 Perfect for analyzing entire features, reviewing modules, or understanding unfamiliar code! 🚀
+
+**Customize:** Create your own folder action templates in `.askbob/folder-actions/` - just like Quick Actions!
 
 ---
 
@@ -152,9 +161,9 @@ Bob AI includes delightful birds chirping sound feedback when you execute comman
 
 ### ✏️ Customize Quick Action Prompts
 
-Bob AI lets you customize all Quick Action prompts to match your workflow! Edit templates, create new ones, or reset to defaults.
+Bob AI lets you customize **both** Quick Action prompts (for code selections) **and** Folder Action templates (for files/folders)! Edit templates, create new ones, or reset to defaults.
 
-**Edit via Command Palette:**
+**Edit Quick Actions (Code Selections):**
 1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 2. Type "Bob AI: Edit Quick Action Prompts"
 3. Choose your editing mode:
@@ -162,21 +171,50 @@ Bob AI lets you customize all Quick Action prompts to match your workflow! Edit 
    - **📄 Edit Files Directly** - Open template files in your editor
    - **📁 Open .askbob Folder** - Browse all customizations
 
+**Edit Folder Actions (Files/Folders):**
+1. Press `Ctrl+Shift+P` → "Bob AI: Edit Folder Action Templates"
+2. Or right-click any folder → "Bob AI: Actions" → "Bob AI: Edit Folder Action Templates"
+3. Same visual editor with support for `{{type}}` and `{{path}}` variables
+
 **Visual Editor Features:**
 - ✨ Edit any template with live preview
-- ➕ Create new custom templates
+- ➕ Create new custom templates with intuitive form interface
+- 🎯 Auto-selection of newly created templates
 - 🔄 Reset to default anytime
 - 🗑️ Delete custom templates
 - 💾 Auto-saves and reloads instantly
+- ✅ HTML5 validation for template filenames
+
+**Creating New Templates:**
+
+When you click "➕ Create New Template", you'll see an intuitive form with:
+- **Filename field** - Auto-validates (lowercase, letters, numbers, hyphens only)
+- **Label field** - Display name with emoji support
+- **Kind selector** - Choose template category (Quick Fix, Refactor, etc.)
+- **Prompt editor** - Large text area with variable hints
+- **Variable documentation** - Built-in hints for `{{code}}`, `{{type}}`, `{{path}}`
+- **Instant feedback** - Template appears in list immediately after creation
+
+No popup dialogs or browser prompts - everything works seamlessly in the webview!
 
 ![alt text](edit-prompt-visual-editor-preview.png)
 
 **Your customizations are stored in:**
 ```
-.askbob/quick-actions/
+.askbob/quick-actions/    # Quick Actions (code selections)
+.askbob/folder-actions/   # Folder Actions (files/folders)
 ```
 
 All customizations are automatically git-ignored by default. Perfect for personal preferences!
+
+**Template Variables:**
+
+*Quick Actions (Code Selections):*
+- `{{code}}` - Selected code reference (e.g., @file.js#L10-15)
+
+*Folder Actions (Files/Folders):*
+- `{{type}}` - "module" (folders) or "file" (files)
+- `{{path}}` - Relative path to the resource
 
 **Learn more:** See [📘 User Guide](./docs/user-guide/CUSTOMIZING_TEMPLATES.md) • [🏗️ Architecture](./docs/technical/TEMPLATE_ARCHITECTURE.md) • [📚 All Docs](./docs/)
 
@@ -244,8 +282,12 @@ Use the Visual Editor to create your own quick actions:
 1. Press Ctrl+Shift+P → "Bob AI: Edit Quick Action Prompts"
 2. Choose "🎨 Open Visual Editor"
 3. Click "➕ Create New Template"
-4. Add your custom prompt (e.g., "Convert to TypeScript")
-5. Use it instantly in Quick Actions!
+4. Fill in the form:
+   - Filename: convert-typescript (auto-validated)
+   - Label: 🔄 Convert to TypeScript
+   - Prompt: Convert this code to TypeScript: {{code}}
+5. Click "✅ Create Template" - it auto-selects and is ready to use!
+6. Use it instantly in Quick Actions with Ctrl+K A!
 ```
 
 ### Tip 3: Tech Spec Workflow
@@ -298,6 +340,14 @@ vsce package
 - [x] Streamlined command set (6 core commands)
 - [x] Sound effects with customizable settings
 - [x] Custom template UI with visual editor
+- [x] Folder action templates (customizable like Quick Actions)
+- [x] Copy code reference for files/folders
+- [x] Visual editor for folder action templates
+- [x] Template variables for Quick Actions (`{{code}}`)
+- [x] Template variables for Folder Actions (`{{type}}`, `{{path}}`)
+- [x] HTML form-based template creation (no browser prompts)
+- [x] Auto-selection of newly created templates
+- [x] Template filename validation and sanitization
 
 **🚧 Coming Soon:**
 - [ ] Multi-file references
