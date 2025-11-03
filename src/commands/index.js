@@ -1,6 +1,9 @@
 const vscode = require('vscode');
 const { copyCodeBlockCommand } = require('./copy-code-block');
 const { sendToTerminalCommand } = require('./send-to-terminal');
+const { sendImageToTerminalCommand } = require('./send-image-to-terminal');
+const { pasteImageFromClipboardCommand } = require('./paste-image-from-clipboard');
+const { cleanupTempImagesCommand } = require('./cleanup-temp-images');
 const { quickActionsCommand, executeQuickActionCommand } = require('./quick-actions');
 const { addFeatureCommand } = require('./add-feature');
 const { executePlanCommand } = require('./execute-plan');
@@ -37,6 +40,26 @@ function registerCommands(context) {
     const sendToTerminal = vscode.commands.registerCommand(
         'ask-ai-cli.sendToTerminal',
         sendToTerminalCommand
+    );
+
+    // Send image to terminal
+    const sendImageToTerminal = vscode.commands.registerCommand(
+        'ask-ai-cli.sendImageToTerminal',
+        sendImageToTerminalCommand
+    );
+
+    // Paste image from clipboard
+    const pasteImageFromClipboard = vscode.commands.registerCommand(
+        'ask-ai-cli.pasteImageFromClipboard',
+        async () => {
+            await pasteImageFromClipboardCommand(context);
+        }
+    );
+
+    // Clean up temp images
+    const cleanupTempImages = vscode.commands.registerCommand(
+        'ask-ai-cli.cleanupTempImages',
+        cleanupTempImagesCommand
     );
 
     // Quick actions (template prompts)
@@ -163,6 +186,9 @@ function registerCommands(context) {
     context.subscriptions.push(
         copyCodeBlock,
         sendToTerminal,
+        sendImageToTerminal,
+        pasteImageFromClipboard,
+        cleanupTempImages,
         quickActions,
         executeQuickAction,
         startAICLI,

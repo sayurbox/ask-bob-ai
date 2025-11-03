@@ -35,6 +35,8 @@ The fastest way to use Bob AI—your fingers never leave home row!
 | `Ctrl+K D` | `Cmd+K D` | 📤 **Send** to terminal |
 | `Ctrl+K F` | `Cmd+K F` | 📋 Copy **reference** |
 | `Ctrl+K G` | `Cmd+K G` | 🚀 Start AI CLI |
+| `Ctrl+K I` | `Cmd+K I` | 🖼️ Send **image file** to terminal |
+| `Ctrl+Shift+K I` | `Cmd+Shift+K I` | 📋 Paste **clipboard image** (NEW!) |
 
 **Pro tip:** Just select code and mash `Ctrl+K A` (or `Cmd+K A` on Mac). Choose your action. Done. ⚡
 
@@ -81,6 +83,74 @@ Perfect for analyzing entire features, reviewing modules, or understanding unfam
 
 ---
 
+## 🖼️ Working with Images
+
+Send images to Claude Code for visual context and analysis!
+
+### ⚡ NEW: Paste from Clipboard (Phase 2!)
+
+**Fastest way to send screenshots:**
+```bash
+1. Take screenshot (Cmd+Shift+4 / Win+Shift+S)
+2. Press Ctrl+Shift+K I
+3. Preview opens → Click "Send to Terminal"
+4. Done! (2 seconds total)
+```
+
+**Features:**
+- ✅ Preview image before sending
+- ✅ No need to save file first
+- ✅ Temp files saved to `~/.bob-ai/temp/`
+- ✅ Manual cleanup command
+
+### Quick Image Send (Files)
+
+- **Right-click** any image file in Explorer → "Bob AI: Send Image to Terminal"
+- **Keyboard:** Select image → Press `Ctrl+K I` (or `Cmd+K I`)
+
+### Supported Formats
+`.png` `.jpg` `.jpeg` `.gif` `.svg` `.webp` `.bmp`
+
+### Use Cases
+
+- 🐛 **Debug UI issues** - Send screenshots of broken layouts
+- 🎨 **Implement designs** - Share mockups and get code suggestions
+- 📊 **Analyze diagrams** - Get help understanding architecture
+- 🖥️ **Explain errors** - Screenshot error messages for analysis
+- 🔍 **Code reviews** - Show before/after UI comparisons
+
+**Example Workflow (Clipboard):**
+```bash
+1. See UI bug → Take screenshot (auto-copies to clipboard)
+2. Press Ctrl+Shift+K I
+3. Preview appears → Click "Send"
+4. Ask: "Why is this button misaligned?"
+```
+
+**Example Workflow (File):**
+```bash
+1. Save screenshot to workspace/screenshots/
+2. Right-click → "Bob AI: Send Image to Terminal"
+3. Ask: "How do I fix this layout?"
+```
+
+**Pro tip:** Combine images with code references for full context!
+```bash
+Select code → Ctrl+K D
+Press Ctrl+Shift+K I → Send clipboard image
+Add your question
+```
+
+**Cleanup temp images:**
+```bash
+Command Palette → "Bob AI: Clean Up Temp Images"
+Choose: Delete All, 7 days, 30 days, or Open Folder
+```
+
+**Learn more:** See [Working with Images Guide](./docs/user-guide/WORKING_WITH_IMAGES.md) for detailed examples and workflows.
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Install
@@ -122,6 +192,7 @@ Your AI explains it line-by-line. Beautiful.
 | Send to Terminal | `Ctrl+K D` | Just the reference |
 | Copy Reference | `Ctrl+K F` | Copy `@path#L1-5` |
 | Start AI CLI | `Ctrl+K G` | Launch Claude/Gemini |
+| Send Image | `Ctrl+K I` | Send image to terminal |
 | Toggle Sound Effects | - | Enable/disable sound feedback |
 
 ### Advanced Features
@@ -237,6 +308,22 @@ vsce package
 # Install .vsix in VS Code Extensions panel
 ```
 
+### Requirements for Clipboard Image Support
+
+**Linux Users Only:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install xclip
+
+# Fedora/RHEL
+sudo yum install xclip
+
+# Arch Linux
+sudo pacman -S xclip
+```
+
+**macOS & Windows:** No additional requirements (built-in clipboard support)
+
 ---
 
 ## 🎨 Code Reference Format
@@ -348,8 +435,14 @@ vsce package
 - [x] HTML form-based template creation (no browser prompts)
 - [x] Auto-selection of newly created templates
 - [x] Template filename validation and sanitization
+- [x] Image attachment support (send screenshots to Claude Code)
+- [x] Image file path references for visual context
+- [x] Clipboard image paste with preview (Phase 2)
+- [x] Temp file management with manual cleanup
+- [x] Image preview WebView before sending
 
 **🚧 Coming Soon:**
+- [ ] Context builder (code + images + prompts) (Phase 3)
 - [ ] Multi-file references
 - [ ] Response preview in editor
 - [ ] Claude Code skills integration

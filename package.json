@@ -2,7 +2,7 @@
   "name": "bob-ai-cli",
   "displayName": "Bob AI CLI",
   "description": "Smart code assistant for Claude Code and other AI CLIs - copy code references, send to terminal, and use quick action templates",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "1031022",
   "repository": {
     "type": "git",
@@ -27,6 +27,16 @@
           "type": "boolean",
           "default": true,
           "description": "Enable or disable sound feedback when executing commands"
+        },
+        "bobAiCli.autoPromptClipboardImage": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically show preview when clipboard contains an image (experimental)"
+        },
+        "bobAiCli.tempImageLocation": {
+          "type": "string",
+          "default": "~/.bob-ai/temp",
+          "description": "Directory to store temporary clipboard images"
         }
       }
     },
@@ -42,6 +52,18 @@
       {
         "command": "ask-ai-cli.sendToTerminal",
         "title": "Bob AI: Send to Terminal"
+      },
+      {
+        "command": "ask-ai-cli.sendImageToTerminal",
+        "title": "Bob AI: Send Image to Terminal"
+      },
+      {
+        "command": "ask-ai-cli.pasteImageFromClipboard",
+        "title": "Bob AI: Paste Image from Clipboard"
+      },
+      {
+        "command": "ask-ai-cli.cleanupTempImages",
+        "title": "Bob AI: Clean Up Temp Images"
       },
       {
         "command": "ask-ai-cli.quickActions",
@@ -133,13 +155,18 @@
           "group": "askAiCli@2"
         },
         {
-          "submenu": "askAiCli.folder",
+          "when": "resourceExtname =~ /\\.(png|jpg|jpeg|gif|svg|webp|bmp)$/",
+          "command": "ask-ai-cli.sendImageToTerminal",
           "group": "askAiCli@3"
+        },
+        {
+          "submenu": "askAiCli.folder",
+          "group": "askAiCli@4"
         },
         {
           "when": "resourceExtname == .md",
           "command": "ask-ai-cli.executePlan",
-          "group": "askAiCli@4"
+          "group": "askAiCli@5"
         }
       ],
       "askAiCli.folder": [
@@ -218,6 +245,15 @@
         {
           "command": "ask-ai-cli.sendToTerminal",
           "when": "editorHasSelection"
+        },
+        {
+          "command": "ask-ai-cli.sendImageToTerminal"
+        },
+        {
+          "command": "ask-ai-cli.pasteImageFromClipboard"
+        },
+        {
+          "command": "ask-ai-cli.cleanupTempImages"
         },
         {
           "command": "ask-ai-cli.quickActions",
@@ -306,6 +342,17 @@
         "key": "ctrl+k g",
         "mac": "cmd+k g",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "ask-ai-cli.sendImageToTerminal",
+        "key": "ctrl+k i",
+        "mac": "cmd+k i",
+        "when": "resourceExtname =~ /\\.(png|jpg|jpeg|gif|svg|webp|bmp)$/"
+      },
+      {
+        "command": "ask-ai-cli.pasteImageFromClipboard",
+        "key": "ctrl+shift+k i",
+        "mac": "cmd+shift+k i"
       }
     ]
   },

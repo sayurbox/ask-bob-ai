@@ -23,12 +23,14 @@ Documentation for **end users** who want to customize and use Bob AI CLI.
 | File | Description | Audience |
 |------|-------------|----------|
 | [CUSTOMIZING_TEMPLATES.md](./user-guide/CUSTOMIZING_TEMPLATES.md) | How to customize Quick Action prompts using the Visual Editor | 👤 End Users |
+| [WORKING_WITH_IMAGES.md](./user-guide/WORKING_WITH_IMAGES.md) | How to send images to Claude Code for visual context analysis | 👤 End Users |
 
 **Start here if you want to:**
 - ✏️ Edit Quick Action prompts
 - ➕ Create custom templates
 - 🔄 Reset templates to defaults
 - 📁 Understand `.askbob/` folder structure
+- 🖼️ Send images to Claude Code for visual context
 
 ---
 
@@ -56,6 +58,8 @@ Documentation for **developers** working on the extension or testing features.
 |------|-------------|----------|
 | [TEMPLATE_ARCHITECTURE.md](./technical/TEMPLATE_ARCHITECTURE.md) | Technical architecture, data flow, design patterns | 🏗️ Architects/Core Devs |
 | [TEMPLATE_API.md](./technical/TEMPLATE_API.md) | API reference, function signatures, TypeScript interfaces | 🏗️ Core Developers |
+| [IMAGE_ATTACHMENT_PLAN.md](./technical/IMAGE_ATTACHMENT_PLAN.md) | Complete image feature implementation plan (3 phases) | 🏗️ Core Developers |
+| [PHASE2_CLIPBOARD_PREVIEW.md](./technical/PHASE2_CLIPBOARD_PREVIEW.md) | Phase 2: Clipboard image preview implementation details | 🏗️ Core Developers |
 
 **Start here if you want to:**
 - 🏗️ Understand the system architecture
@@ -71,6 +75,9 @@ Documentation for **developers** working on the extension or testing features.
 
 **🎯 Customize my Quick Actions**
 → Read [user-guide/CUSTOMIZING_TEMPLATES.md](./user-guide/CUSTOMIZING_TEMPLATES.md)
+
+**🖼️ Work with images in Claude Code**
+→ Read [user-guide/WORKING_WITH_IMAGES.md](./user-guide/WORKING_WITH_IMAGES.md)
 
 **🧪 Test the template system**
 → Read [dev/TESTING_TEMPLATES.md](./dev/TESTING_TEMPLATES.md)
@@ -140,6 +147,10 @@ When adding new documentation:
 - 🛠️ **Dev:** [Testing Templates](./dev/TESTING_TEMPLATES.md)
 - 🏗️ **Technical:** [Architecture](./technical/TEMPLATE_ARCHITECTURE.md) • [API](./technical/TEMPLATE_API.md)
 
+### Image Features
+- 📘 **User:** [Working with Images](./user-guide/WORKING_WITH_IMAGES.md)
+- 🏗️ **Technical:** [Image Implementation Plan](./technical/IMAGE_ATTACHMENT_PLAN.md)
+
 ### Extension Features
 - 📘 **User:** See [Main README](../README.md#-quick-start)
 - 🛠️ **Dev:** See [TESTING.md](../TESTING.md)
@@ -154,9 +165,11 @@ When adding new documentation:
 | Document | Status | Last Updated | Version |
 |----------|--------|--------------|---------|
 | CUSTOMIZING_TEMPLATES.md | ✅ Complete | Oct 2024 | 1.0 |
+| WORKING_WITH_IMAGES.md | ✅ Complete | Nov 2024 | 1.0 |
 | TESTING_TEMPLATES.md | ✅ Complete | Oct 2024 | 1.0 |
 | TEMPLATE_ARCHITECTURE.md | ✅ Complete | Oct 2024 | 1.0 |
 | TEMPLATE_API.md | ✅ Complete | Oct 2024 | 1.0 |
+| IMAGE_ATTACHMENT_PLAN.md | ✅ Complete | Nov 2024 | 1.0 |
 
 ---
 
