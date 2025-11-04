@@ -1,6 +1,9 @@
 const vscode = require('vscode');
 const { copyCodeBlockCommand } = require('./copy-code-block');
 const { sendToTerminalCommand } = require('./send-to-terminal');
+const { sendImageToTerminalCommand } = require('./send-image-to-terminal');
+const { pasteImageFromClipboardCommand } = require('./paste-image-from-clipboard');
+const { cleanupTempImagesCommand } = require('./cleanup-temp-images');
 const { quickActionsCommand, executeQuickActionCommand } = require('./quick-actions');
 const { addFeatureCommand } = require('./add-feature');
 const { executePlanCommand } = require('./execute-plan');
@@ -18,6 +21,7 @@ const {
     folderCopyReferenceCommand
 } = require('./folder-operations');
 const { toggleSoundCommand } = require('./toggle-sound');
+const { toggleAutoPromptCommand } = require('./toggle-auto-prompt');
 const { editTemplatesCommand } = require('./edit-templates');
 const { editFolderTemplatesCommand } = require('./edit-folder-templates');
 const { showAICLIPicker } = require('../services/terminal-manager');
@@ -37,6 +41,26 @@ function registerCommands(context) {
     const sendToTerminal = vscode.commands.registerCommand(
         'ask-ai-cli.sendToTerminal',
         sendToTerminalCommand
+    );
+
+    // Send image to terminal
+    const sendImageToTerminal = vscode.commands.registerCommand(
+        'ask-ai-cli.sendImageToTerminal',
+        sendImageToTerminalCommand
+    );
+
+    // Paste image from clipboard
+    const pasteImageFromClipboard = vscode.commands.registerCommand(
+        'ask-ai-cli.pasteImageFromClipboard',
+        async () => {
+            await pasteImageFromClipboardCommand(context);
+        }
+    );
+
+    // Clean up temp images
+    const cleanupTempImages = vscode.commands.registerCommand(
+        'ask-ai-cli.cleanupTempImages',
+        cleanupTempImagesCommand
     );
 
     // Quick actions (template prompts)
@@ -147,6 +171,12 @@ function registerCommands(context) {
         toggleSoundCommand
     );
 
+    // Toggle auto-prompt clipboard images
+    const toggleAutoPrompt = vscode.commands.registerCommand(
+        'ask-ai-cli.toggleAutoPrompt',
+        toggleAutoPromptCommand
+    );
+
     // Edit templates
     const editTemplates = vscode.commands.registerCommand(
         'ask-ai-cli.editTemplates',
@@ -163,6 +193,9 @@ function registerCommands(context) {
     context.subscriptions.push(
         copyCodeBlock,
         sendToTerminal,
+        sendImageToTerminal,
+        pasteImageFromClipboard,
+        cleanupTempImages,
         quickActions,
         executeQuickAction,
         startAICLI,
@@ -180,6 +213,7 @@ function registerCommands(context) {
         folderQuickActions,
         folderCopyReference,
         toggleSound,
+        toggleAutoPrompt,
         editTemplates,
         editFolderTemplates
     );

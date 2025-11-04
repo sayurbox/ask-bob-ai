@@ -263,19 +263,20 @@ function detectCLIType(terminal) {
  * @returns {Promise<boolean>} True if sent successfully, false otherwise
  */
 async function sendToAITerminal(text) {
+    // Find active AI CLI terminal (Claude Code, Gemini, etc.)
     let aiTerminal = findAITerminal();
 
-    // Validate terminal still exists in VS Code
+    // Validate terminal still exists in VS Code terminal list
     if (aiTerminal) {
         const allTerminals = vscode.window.terminals;
         if (!allTerminals.includes(aiTerminal)) {
-            // Terminal was closed, clean up
+            // Terminal was closed, clean up tracking
             trackedAITerminals.delete(aiTerminal);
             aiTerminal = null;
         }
     }
 
-    // Check if we're using a fallback terminal (not an obvious AI terminal)
+    // Check if terminal is an obvious AI CLI (not just any terminal)
     const isObviousAI = isObviousAITerminal(aiTerminal);
 
     // Block action if no obvious AI CLI terminal found
@@ -286,7 +287,7 @@ async function sendToAITerminal(text) {
         );
 
         if (answer === 'Start AI CLI Now') {
-            // Open command palette to start AI CLI
+            // Open AI CLI picker command
             vscode.commands.executeCommand('ask-ai-cli.startAICLI');
         }
 
@@ -294,46 +295,41 @@ async function sendToAITerminal(text) {
     }
 
     try {
-        // Show the terminal first to make it visible
+        // Show terminal to make it visible and focused
         aiTerminal.show();
 
-        // Detect CLI type and adjust formatting
+        // Detect CLI type for proper formatting (claude, gemini, etc.)
         const cliType = detectCLIType(aiTerminal);
 
-        // Check if CLI is supported
+        // Verify CLI is supported before sending
         if (cliType !== 'claude' && cliType !== 'gemini') {
             const cliName = aiTerminal.name;
             vscode.window.showWarningMessage(
                 `Support for "${cliName}" is coming soon! Currently only Claude Code and Gemini CLI are supported.`,
                 'Got it'
             );
-            console.log(`Unsupported CLI detected: ${cliName} (type: ${cliType})`);
             return false;
         }
 
-        // Strip trailing backslash and whitespace for all CLIs (prevents manual Enter)
+        // Strip trailing backslash and whitespace
         let formattedText = text.replace(/\s*\\+\s*$/, '').trim();
-        let addNewline = true;
 
-        // Gemini CLI: Use clipboard + auto-paste approach as sendText may not work
+        // Gemini CLI: Use clipboard method (sendText may not work reliably)
         if (cliType === 'gemini') {
-
-            // Copy to clipboard
+            // Copy to clipboard first
             await vscode.env.clipboard.writeText(formattedText);
-            console.log(`Gemini CLI: Copied to clipboard: ${formattedText.substring(0, 50)}...`);
 
-            // Focus the terminal to ensure paste goes to right place
+            // Focus terminal
             aiTerminal.show();
 
-            // Small delay to ensure terminal is focused
+            // Small delay to ensure terminal has focus
             await new Promise(resolve => setTimeout(resolve, 100));
 
-            // Try to auto-paste using VS Code's paste command
+            // Try to auto-paste using VS Code command
             try {
                 await vscode.commands.executeCommand('workbench.action.terminal.paste');
                 vscode.window.showInformationMessage('Text pasted into Gemini CLI terminal');
             } catch (pasteError) {
-                console.error(`Auto-paste failed: ${pasteError.message}`);
                 // Fallback: show manual paste instruction
                 vscode.window.showInformationMessage(
                     'Text copied to clipboard! Paste it into Gemini CLI terminal (Cmd+V or Ctrl+V)',
@@ -344,18 +340,10 @@ async function sendToAITerminal(text) {
             return true;
         }
 
-        // For Claude and other CLIs, use sendText
-        // Send text first, then explicitly send Enter for auto-execution
+        // Claude Code: Send text WITHOUT auto-enter
+        // User can review the prompt before pressing Enter manually
         aiTerminal.sendText(formattedText, false);
 
-        if (addNewline) {
-            // Small delay to ensure text is sent before Enter
-            await new Promise(resolve => setTimeout(resolve, 50));
-            aiTerminal.sendText('', true); // Send Enter
-        }
-
-        const cliName = cliType === 'claude' ? 'Claude Code' : 'AI CLI';
-        vscode.window.showInformationMessage(`Sent to ${cliName} terminal`);
         return true;
     } catch (error) {
         // If sending fails, terminal might be dead - clean up
