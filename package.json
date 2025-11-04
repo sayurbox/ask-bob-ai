@@ -130,6 +130,10 @@
         "title": "Bob AI: Toggle Sound Effects"
       },
       {
+        "command": "ask-ai-cli.toggleAutoPrompt",
+        "title": "Bob AI: Toggle Auto-Detect Screenshots"
+      },
+      {
         "command": "ask-ai-cli.editTemplates",
         "title": "Bob AI: Edit Quick Action Prompts"
       },
@@ -311,6 +315,9 @@
           "command": "ask-ai-cli.toggleSound"
         },
         {
+          "command": "ask-ai-cli.toggleAutoPrompt"
+        },
+        {
           "command": "ask-ai-cli.editTemplates"
         },
         {
@@ -348,11 +355,6 @@
         "key": "ctrl+k i",
         "mac": "cmd+k i",
         "when": "resourceExtname =~ /\\.(png|jpg|jpeg|gif|svg|webp|bmp)$/"
-      },
-      {
-        "command": "ask-ai-cli.pasteImageFromClipboard",
-        "key": "ctrl+shift+k i",
-        "mac": "cmd+shift+k i"
       }
     ]
   },

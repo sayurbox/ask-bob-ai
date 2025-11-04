@@ -4,6 +4,7 @@ const { AICodeActionProvider } = require('./providers/code-action-provider');
 const { setupTerminalListeners } = require('./services/terminal-manager');
 const { initializeFileWatcher, dispose: disposeTemplateLoader } = require('./services/template-loader');
 const { initializeFolderFileWatcher, dispose: disposeFolderTemplateLoader } = require('./services/folder-template-loader');
+const { startMonitoring, stopMonitoring, restartMonitoring } = require('./services/clipboard-monitor');
 
 // Store extension path for use by utilities
 let extensionPath = '';
@@ -51,6 +52,18 @@ function activate(context) {
     initializeFolderFileWatcher(context);
     console.log('Folder template file watcher initialized');
 
+    // Start clipboard monitor if enabled
+    startMonitoring(context);
+    console.log('Clipboard monitor initialized');
+
+    // Watch for configuration changes
+    vscode.workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration('bobAiCli.autoPromptClipboardImage')) {
+            console.log('Auto-prompt setting changed, restarting monitor...');
+            restartMonitoring(context);
+        }
+    });
+
     // Register all commands
     registerCommands(context);
 }
@@ -59,6 +72,10 @@ function activate(context) {
  * Deactivate the extension
  */
 function deactivate() {
+    // Stop clipboard monitor
+    stopMonitoring();
+    console.log('Clipboard monitor stopped');
+
     // Dispose template loader resources
     disposeTemplateLoader();
     disposeFolderTemplateLoader();

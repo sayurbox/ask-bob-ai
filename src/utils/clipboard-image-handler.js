@@ -8,6 +8,35 @@ const { promisify } = require('util');
 const execAsync = promisify(exec);
 
 /**
+ * Execute command with timeout
+ * @param {string} command - Command to execute
+ * @param {number} timeoutMs - Timeout in milliseconds (default 10000)
+ * @returns {Promise<{stdout: string, stderr: string}>}
+ */
+async function execWithTimeout(command, timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+        const process = exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve({ stdout, stderr });
+            }
+        });
+
+        // Set timeout
+        const timeout = setTimeout(() => {
+            process.kill();
+            reject(new Error(`Command timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+
+        // Clear timeout if command completes
+        process.on('exit', () => {
+            clearTimeout(timeout);
+        });
+    });
+}
+
+/**
  * Get temp directory for clipboard images
  * Location: ~/.bob-ai/temp/
  * @returns {string} Temp directory path
@@ -60,7 +89,6 @@ async function hasClipboardImage() {
 
         return false;
     } catch (error) {
-        console.error('Failed to check clipboard:', error);
         return false;
     }
 }
@@ -75,6 +103,7 @@ async function saveClipboardImageToTemp() {
 
     try {
         let command;
+        let timeout = 10000; // 10 second timeout
 
         if (platform === 'darwin') {
             // macOS: Use osascript to save clipboard image
@@ -86,7 +115,7 @@ async function saveClipboardImageToTemp() {
         } else {
             // Linux: Use xclip (check if installed first)
             try {
-                await execAsync('which xclip');
+                await execWithTimeout('which xclip', 2000);
             } catch {
                 throw new Error(
                     'xclip is not installed. Install it with:\n' +
@@ -98,36 +127,34 @@ async function saveClipboardImageToTemp() {
             command = `xclip -selection clipboard -t image/png -o > "${tempPath}"`;
         }
 
-        // Execute command
-        await execAsync(command);
+        // Execute command with timeout
+        await execWithTimeout(command, timeout);
 
         // Verify file was created and has content
         if (fs.existsSync(tempPath)) {
             const stats = fs.statSync(tempPath);
+
             if (stats.size > 0) {
-                console.log(`Clipboard image saved to: ${tempPath}`);
                 return tempPath;
             } else {
                 // Empty file, delete it
                 fs.unlinkSync(tempPath);
-                console.log('Clipboard image file is empty, deleted');
                 return null;
             }
         }
 
         return null;
     } catch (error) {
-        console.error('Failed to save clipboard image:', error.message);
-
         // Clean up temp file if it was created but is empty/corrupted
         if (fs.existsSync(tempPath)) {
             try {
                 fs.unlinkSync(tempPath);
             } catch (unlinkError) {
-                console.error('Failed to clean up temp file:', unlinkError);
+                // Ignore cleanup errors
             }
         }
 
+        // Return null instead of throwing (clipboard monitoring expects this)
         return null;
     }
 }
@@ -156,7 +183,6 @@ function getImageMetadata(imagePath) {
             created: stats.birthtime
         };
     } catch (error) {
-        console.error('Failed to get image metadata:', error);
         return null;
     }
 }
@@ -175,7 +201,6 @@ function isTempDirectoryWritable() {
 
         return true;
     } catch (error) {
-        console.error('Temp directory not writable:', error);
         return false;
     }
 }

@@ -10,6 +10,10 @@ const path = require('path');
  */
 async function showImagePreview(context, imagePath, metadata) {
     return new Promise((resolve) => {
+        // Track if promise already resolved to prevent race conditions
+        let resolved = false;
+
+        // Create webview panel for image preview
         const panel = vscode.window.createWebviewPanel(
             'bobAiImagePreview',
             '🖼️ Image Preview - Bob AI',
@@ -22,22 +26,32 @@ async function showImagePreview(context, imagePath, metadata) {
             }
         );
 
-        // Convert image path to webview URI
+        // Convert file path to webview-compatible URI
         const imageUri = panel.webview.asWebviewUri(vscode.Uri.file(imagePath));
 
+        // Set HTML content with image preview and buttons
         panel.webview.html = getWebviewContent(imageUri, metadata);
 
-        // Handle messages from webview
+        // Handle button clicks from webview (Send/Cancel)
         panel.webview.onDidReceiveMessage(
             message => {
+                // Prevent duplicate handling if already resolved
+                if (resolved) {
+                    return;
+                }
+
                 switch (message.command) {
                     case 'send':
-                        panel.dispose();
+                        // User confirmed - resolve with true to send to terminal
+                        resolved = true;
                         resolve(true);
+                        panel.dispose();
                         return;
                     case 'cancel':
-                        panel.dispose();
+                        // User cancelled - resolve with false
+                        resolved = true;
                         resolve(false);
+                        panel.dispose();
                         return;
                 }
             },
@@ -45,9 +59,12 @@ async function showImagePreview(context, imagePath, metadata) {
             context.subscriptions
         );
 
-        // Handle panel close (X button)
+        // Handle panel close via X button (treat as cancel)
         panel.onDidDispose(() => {
-            resolve(false);
+            if (!resolved) {
+                resolved = true;
+                resolve(false);
+            }
         });
     });
 }
@@ -241,28 +258,34 @@ function getWebviewContent(imageUri, metadata) {
     </div>
 
     <script>
+        // Get VS Code API for messaging
         const vscode = acquireVsCodeApi();
 
+        // Send button clicked - post 'send' message to extension
         function sendToTerminal() {
             vscode.postMessage({ command: 'send' });
         }
 
+        // Cancel button clicked - post 'cancel' message to extension
         function cancel() {
             vscode.postMessage({ command: 'cancel' });
         }
 
-        // Keyboard shortcuts
+        // Keyboard shortcuts for better UX
         document.addEventListener('keydown', (e) => {
+            // Cmd/Ctrl+Enter: Send to terminal
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 sendToTerminal();
-            } else if (e.key === 'Escape') {
+            }
+            // Escape: Cancel and close preview
+            else if (e.key === 'Escape') {
                 e.preventDefault();
                 cancel();
             }
         });
 
-        // Focus send button by default
+        // Auto-focus send button when preview loads
         window.addEventListener('load', () => {
             document.getElementById('send-btn').focus();
         });

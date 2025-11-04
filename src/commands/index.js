@@ -21,6 +21,7 @@ const {
     folderCopyReferenceCommand
 } = require('./folder-operations');
 const { toggleSoundCommand } = require('./toggle-sound');
+const { toggleAutoPromptCommand } = require('./toggle-auto-prompt');
 const { editTemplatesCommand } = require('./edit-templates');
 const { editFolderTemplatesCommand } = require('./edit-folder-templates');
 const { showAICLIPicker } = require('../services/terminal-manager');
@@ -170,6 +171,12 @@ function registerCommands(context) {
         toggleSoundCommand
     );
 
+    // Toggle auto-prompt clipboard images
+    const toggleAutoPrompt = vscode.commands.registerCommand(
+        'ask-ai-cli.toggleAutoPrompt',
+        toggleAutoPromptCommand
+    );
+
     // Edit templates
     const editTemplates = vscode.commands.registerCommand(
         'ask-ai-cli.editTemplates',
@@ -206,6 +213,7 @@ function registerCommands(context) {
         folderQuickActions,
         folderCopyReference,
         toggleSound,
+        toggleAutoPrompt,
         editTemplates,
         editFolderTemplates
     );

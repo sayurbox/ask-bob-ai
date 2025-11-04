@@ -36,7 +36,7 @@ The fastest way to use Bob AI—your fingers never leave home row!
 | `Ctrl+K F` | `Cmd+K F` | 📋 Copy **reference** |
 | `Ctrl+K G` | `Cmd+K G` | 🚀 Start AI CLI |
 | `Ctrl+K I` | `Cmd+K I` | 🖼️ Send **image file** to terminal |
-| `Ctrl+Shift+K I` | `Cmd+Shift+K I` | 📋 Paste **clipboard image** (NEW!) |
+| `Ctrl+Shift+K I` | `Cmd+Shift+K I` | 📋 **Paste image** from clipboard |
 
 **Pro tip:** Just select code and mash `Ctrl+K A` (or `Cmd+K A` on Mac). Choose your action. Done. ⚡
 
@@ -89,19 +89,35 @@ Send images to Claude Code for visual context and analysis!
 
 ### ⚡ NEW: Paste from Clipboard (Phase 2!)
 
-**Fastest way to send screenshots:**
+**🤖 Auto-Detect Mode (Recommended):**
+```bash
+1. Enable: Cmd+Shift+P → "Bob AI: Toggle Auto-Detect Screenshots"
+2. Make sure AI CLI (Claude Code) is running
+3. Take screenshot (Cmd+Shift+4 / Win+Shift+S)
+4. Notification appears: "📷 Screenshot detected!"
+5. Click "Preview & Send"
+6. Review image → Click "Send to Terminal"
+7. Text populates in terminal → Press Enter to submit
+```
+
+**⌨️ Manual Mode:**
 ```bash
 1. Take screenshot (Cmd+Shift+4 / Win+Shift+S)
-2. Press Ctrl+Shift+K I
+2. Press Ctrl+Shift+K I (or Cmd+Shift+K I on Mac)
+   OR: Command Palette → "Paste Image from Clipboard"
 3. Preview opens → Click "Send to Terminal"
-4. Done! (2 seconds total)
+4. Text populates in terminal → Press Enter to submit
 ```
 
 **Features:**
-- ✅ Preview image before sending
+- ✅ **Auto-detect screenshots** (optional, only when AI CLI running)
+- ✅ **60-second deduplication** (same screenshot won't trigger twice)
+- ✅ **Preview image before sending** (cancel anytime)
+- ✅ **No auto-execute** (review prompt before pressing Enter)
 - ✅ No need to save file first
 - ✅ Temp files saved to `~/.bob-ai/temp/`
 - ✅ Manual cleanup command
+- ✅ Works even if you change clipboard after taking screenshot
 
 ### Quick Image Send (Files)
 
@@ -119,12 +135,14 @@ Send images to Claude Code for visual context and analysis!
 - 🖥️ **Explain errors** - Screenshot error messages for analysis
 - 🔍 **Code reviews** - Show before/after UI comparisons
 
-**Example Workflow (Clipboard):**
+**Example Workflow (Clipboard - Auto-Detect):**
 ```bash
-1. See UI bug → Take screenshot (auto-copies to clipboard)
-2. Press Ctrl+Shift+K I
-3. Preview appears → Click "Send"
-4. Ask: "Why is this button misaligned?"
+1. Start Claude Code (AI CLI must be running)
+2. See UI bug → Take screenshot (auto-copies to clipboard)
+3. Notification appears: "📷 Screenshot detected!"
+4. Click "Preview & Send" → Preview appears → Click "Send"
+5. Prompt populates in terminal → Press Enter
+6. Ask: "Why is this button misaligned?"
 ```
 
 **Example Workflow (File):**
@@ -136,9 +154,9 @@ Send images to Claude Code for visual context and analysis!
 
 **Pro tip:** Combine images with code references for full context!
 ```bash
-Select code → Ctrl+K D
-Press Ctrl+Shift+K I → Send clipboard image
-Add your question
+1. Select code → Ctrl+K D
+2. Take screenshot → Click "Preview & Send" in notification
+3. Add your question
 ```
 
 **Cleanup temp images:**
@@ -192,8 +210,10 @@ Your AI explains it line-by-line. Beautiful.
 | Send to Terminal | `Ctrl+K D` | Just the reference |
 | Copy Reference | `Ctrl+K F` | Copy `@path#L1-5` |
 | Start AI CLI | `Ctrl+K G` | Launch Claude/Gemini |
-| Send Image | `Ctrl+K I` | Send image to terminal |
+| Send Image | `Ctrl+K I` | Send image file to terminal |
+| Paste Image | `Ctrl+Shift+K I` | Paste from clipboard with preview |
 | Toggle Sound Effects | - | Enable/disable sound feedback |
+| Toggle Auto-Detect | - | Enable/disable screenshot detection |
 
 ### Advanced Features
 
@@ -224,11 +244,38 @@ Bob AI includes delightful birds chirping sound feedback when you execute comman
 **Or edit settings.json directly:**
 ```json
 {
-  "bobAiCli.enableSoundEffects": true  // or false to disable
+  "bobAiCli.enableSoundEffects": true,  // or false to disable
+  "bobAiCli.autoPromptClipboardImage": false  // set true to auto-detect screenshots
 }
 ```
 
-**Default:** Sound effects are **enabled** by default. Turn them off if you prefer silent operation!
+**Default:** Sound effects are **enabled** by default. Auto-detect is **disabled** by default (use toggle command to enable).
+
+### 📷 Auto-Detect Screenshots
+
+Bob AI can automatically detect when you take screenshots and show a notification!
+
+**Toggle via Command Palette:**
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+2. Type "Bob AI: Toggle Auto-Detect Screenshots"
+3. Press Enter to enable/disable
+
+**How it works:**
+- Monitors clipboard every 2 seconds (lightweight)
+- Detects when new image appears
+- **Only shows notification when AI CLI is running** (smart & non-intrusive)
+- Shows notification: "📷 Screenshot detected! [Preview & Send] [Ignore]"
+- **60-second deduplication** - same screenshot won't trigger twice
+- Click "Preview & Send" to open preview window
+- Silent when dismissed - no clutter
+- No interruption if you're just copying text
+
+**Settings:**
+```json
+{
+  "bobAiCli.autoPromptClipboardImage": true  // Enable auto-detection
+}
+```
 
 ### ✏️ Customize Quick Action Prompts
 
@@ -438,6 +485,9 @@ vsce package
 - [x] Image attachment support (send screenshots to Claude Code)
 - [x] Image file path references for visual context
 - [x] Clipboard image paste with preview (Phase 2)
+- [x] Auto-detect screenshots with toggle (only when AI CLI running)
+- [x] 60-second deduplication for screenshots
+- [x] Manual control (no auto-execute, review before Enter)
 - [x] Temp file management with manual cleanup
 - [x] Image preview WebView before sending
 

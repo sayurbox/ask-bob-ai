@@ -20,33 +20,54 @@ Claude Code can analyze images through file paths, making it easy to get visual 
 
 ## 🚀 Quick Start
 
-### Method 1: Paste from Clipboard (NEW - Phase 2!) ⚡
+### Method 1: Auto-Detect Mode (NEW - Phase 2!) 🤖
+
+**Recommended workflow - zero keyboard shortcuts needed!**
+
+1. **Enable auto-detect:** `Ctrl+Shift+P` → "Bob AI: Toggle Auto-Detect Screenshots"
+2. **Start AI CLI:** Claude Code must be running (Press `Ctrl+K G` if not)
+3. **Take screenshot:** Cmd+Shift+4 (Mac) or Win+Shift+S (Windows)
+4. **Notification appears:** "📷 Screenshot detected! [Preview & Send] [Ignore]"
+5. **Click "Preview & Send"** → Preview window opens
+6. **Click "Send to Terminal"** → Prompt populates in terminal
+7. **Press Enter** to submit your question
+
+**Benefits:**
+- ✅ Zero keyboard shortcuts needed after enabling
+- ✅ Only appears when AI CLI is running (smart & non-intrusive)
+- ✅ 60-second deduplication (same screenshot won't trigger twice)
+- ✅ Preview before sending
+- ✅ Silent when dismissed (no clutter)
+- ✅ Review prompt before submitting (no auto-execute)
+
+### Method 2: Manual Paste from Clipboard ⚡
 
 1. Take a screenshot (Cmd+Shift+4 on Mac, Win+Shift+S on Windows)
 2. Press `Ctrl+Shift+K I` (or `Cmd+Shift+K I` on Mac)
 3. **Preview window opens** showing your image
 4. Click "📤 Send to Terminal" to confirm
-5. Image saved to `~/.bob-ai/temp/` and sent to Claude Code
+5. Prompt populates in terminal → Press Enter to submit
 
 **Benefits:**
 - No need to save file first
+- Works anytime (doesn't require AI CLI running first)
 - Preview before sending
-- Fastest workflow (2-3 seconds)
+- Fast workflow (2-3 seconds)
 
-### Method 2: Right-Click Image File
+### Method 3: Right-Click Image File 📁
 
 1. Save your screenshot/image to your workspace
 2. Right-click the image file in VS Code Explorer
 3. Select **"Bob AI: Send Image to Terminal"**
 4. Claude Code receives the image reference
 
-### Method 3: Keyboard Shortcut (File)
+### Method 4: Keyboard Shortcut (File)
 
 1. Select an image file in Explorer
 2. Press `Ctrl+K I` (or `Cmd+K I` on Mac)
 3. Image sent to terminal instantly
 
-### Method 4: Command Palette
+### Method 5: Command Palette
 
 1. Open Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type "Bob AI: Paste Image from Clipboard" (NEW!) or "Send Image to Terminal"
@@ -76,16 +97,30 @@ Bob AI supports all common image formats:
 
 **Scenario:** Button alignment is off in your app
 
+**Using Auto-Detect (Fastest):**
 ```
-1. Take screenshot of the broken UI
-2. Save as workspace/screenshots/button-issue.png
-3. Right-click → "Bob AI: Send Image to Terminal"
-4. Ask: "Why is the button misaligned? How do I fix it?"
+1. Enable auto-detect: Toggle Auto-Detect Screenshots
+2. Start Claude Code
+3. Take screenshot of the broken UI (Cmd+Shift+4)
+4. Notification: "📷 Screenshot detected!" → Click "Preview & Send"
+5. Preview opens → Click "Send to Terminal"
+6. Terminal: "Here's an image (bob-ai-2024-01-15...).png: /path/to/temp/image.png"
+7. Press Enter and ask: "Why is the button misaligned? How do I fix it?"
 ```
 
-**Claude receives:**
+**Using Manual Paste:**
 ```
-Here's an image (button-issue.png): /path/to/workspace/screenshots/button-issue.png
+1. Take screenshot of the broken UI
+2. Press Ctrl+Shift+K I
+3. Preview → Click "Send to Terminal"
+4. Press Enter and add your question
+```
+
+**Using File (Traditional):**
+```
+1. Save screenshot as workspace/screenshots/button-issue.png
+2. Right-click → "Bob AI: Send Image to Terminal"
+3. Ask: "Why is the button misaligned? How do I fix it?"
 ```
 
 ---
@@ -250,14 +285,73 @@ Build complete context manually:
 
 ---
 
+## 🎛️ Auto-Detect Settings
+
+### How It Works
+
+When enabled, auto-detect monitors your clipboard every 2 seconds for new images:
+
+1. **Smart Detection** - Only shows notification when AI CLI is running
+2. **60-Second Deduplication** - Same screenshot won't trigger notification twice within 60 seconds
+3. **Lightweight** - Minimal CPU/memory usage (~0.1% CPU)
+4. **Non-Intrusive** - Silent when no AI CLI running or when dismissed
+
+### Toggle On/Off
+
+**Via Command Palette:**
+```
+Ctrl+Shift+P → "Bob AI: Toggle Auto-Detect Screenshots"
+```
+
+**Via Settings:**
+```json
+{
+  "bobAiCli.autoPromptClipboardImage": true  // or false
+}
+```
+
+**Status Messages:**
+- ✅ Enabled: "Auto-detect screenshots: ENABLED - Now when you take a screenshot, a notification will appear automatically!"
+- ⏸️ Disabled: "Auto-detect screenshots: DISABLED - Use Command Palette or Cmd+Shift+K I to paste images manually."
+
+### Deduplication Behavior
+
+**Same screenshot within 60 seconds:**
+```
+1. Take screenshot → Notification appears ✅
+2. Toggle sidebar (image still in clipboard)
+3. No notification (duplicate detected) 🔇
+4. Wait 60 seconds
+5. Can trigger notification again ♻️
+```
+
+**Different screenshots:**
+```
+1. Take screenshot A → Notification appears ✅
+2. Take screenshot B → Notification appears ✅ (different content)
+3. Take screenshot A again (within 60s) → No notification 🔇 (duplicate)
+```
+
+### Manual Control
+
+**No auto-execute** - When you send an image, the prompt populates in the terminal but **does NOT** automatically submit. You can:
+- ✅ Review the prompt first
+- ✅ Edit it if needed
+- ✅ Press Enter when ready
+- ✅ Press Ctrl+C to cancel
+
+This gives you full control before Claude Code processes your request.
+
+---
+
 ## ⚠️ Limitations & Troubleshooting
 
 ### Limitations
 
-1. **File-based only** - Image must be saved to disk first (no clipboard paste in Phase 1)
+1. ~~**File-based only**~~ ✅ **FIXED in Phase 2** - Clipboard paste now supported!
 2. **Absolute paths** - Claude Code needs full file paths
-3. **Terminal required** - AI CLI must be running before sending
-4. **No drag-drop** - Must use right-click or keyboard shortcut
+3. **AI CLI required** - Claude Code must be running (auto-detect won't show if not running)
+4. **No drag-drop** - Must use right-click, keyboard shortcut, or auto-detect
 
 ### Troubleshooting
 

@@ -51,7 +51,7 @@ async function sendImageToTerminalCommand(resourceUri) {
             try {
                 await playSuccessSound();
             } catch (soundErr) {
-                console.warn('Failed to play success sound:', soundErr.message);
+                // Silent sound error
             }
         }
     } catch (err) {
