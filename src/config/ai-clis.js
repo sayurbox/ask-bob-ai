@@ -18,6 +18,14 @@ const AI_CLIS = [
         supported: true
     },
     {
+        name: 'Droid AI CLI',
+        command: 'droid',
+        checkCommand: 'which droid',
+        icon: '🤖',
+        terminalName: 'Droid AI',
+        supported: true
+    },
+    {
         name: 'ChatGPT CLI',
         command: 'chatgpt',
         checkCommand: 'which chatgpt',

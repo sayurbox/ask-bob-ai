@@ -50,6 +50,8 @@ function findAITerminal() {
                shellPath.includes('anthropic') ||
                name.includes('gemini') ||
                shellPath.includes('gemini') ||
+               name.includes('droid') ||
+               shellPath.includes('droid') ||
                name.includes('chatgpt') ||
                shellPath.includes('chatgpt') ||
                name.includes('gpt') ||
@@ -215,6 +217,8 @@ function isObviousAITerminal(terminal) {
            shellPath.includes('anthropic') ||
            name.includes('gemini') ||
            shellPath.includes('gemini') ||
+           name.includes('droid') ||
+           shellPath.includes('droid') ||
            name.includes('chatgpt') ||
            shellPath.includes('chatgpt') ||
            name.includes('gpt') ||
@@ -226,7 +230,7 @@ function isObviousAITerminal(terminal) {
 /**
  * Detect which CLI type is running in the terminal
  * @param {vscode.Terminal} terminal - Terminal to check
- * @returns {string} CLI type: 'claude', 'gemini', 'chatgpt', 'aider', or 'unknown'
+ * @returns {string} CLI type: 'claude', 'gemini', 'droid', 'chatgpt', 'aider', or 'unknown'
  */
 function detectCLIType(terminal) {
     if (!terminal) {
@@ -238,6 +242,10 @@ function detectCLIType(terminal) {
 
     if (name.includes('gemini') || shellPath.includes('gemini')) {
         return 'gemini';
+    }
+
+    if (name.includes('droid') || shellPath.includes('droid')) {
+        return 'droid';
     }
 
     if (name.includes('claude') || shellPath.includes('claude') ||
@@ -298,14 +306,14 @@ async function sendToAITerminal(text) {
         // Show terminal to make it visible and focused
         aiTerminal.show();
 
-        // Detect CLI type for proper formatting (claude, gemini, etc.)
+        // Detect CLI type for proper formatting (claude, gemini, droid, etc.)
         const cliType = detectCLIType(aiTerminal);
 
         // Verify CLI is supported before sending
-        if (cliType !== 'claude' && cliType !== 'gemini') {
+        if (cliType !== 'claude' && cliType !== 'gemini' && cliType !== 'droid') {
             const cliName = aiTerminal.name;
             vscode.window.showWarningMessage(
-                `Support for "${cliName}" is coming soon! Currently only Claude Code and Gemini CLI are supported.`,
+                `Support for "${cliName}" is coming soon! Currently only Claude Code, Gemini CLI, and Droid AI CLI are supported.`,
                 'Got it'
             );
             return false;
@@ -340,7 +348,7 @@ async function sendToAITerminal(text) {
             return true;
         }
 
-        // Claude Code: Send text WITHOUT auto-enter
+        // Claude Code and Droid AI: Send text WITHOUT auto-enter
         // User can review the prompt before pressing Enter manually
         aiTerminal.sendText(formattedText, false);
 
