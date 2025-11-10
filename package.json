@@ -2,7 +2,7 @@
   "name": "bob-ai-cli",
   "displayName": "Bob AI CLI",
   "description": "Smart code assistant for Claude Code and other AI CLIs - copy code references, send to terminal, and use quick action templates",
-  "version": "0.0.5",
+  "version": "0.0.8",
   "publisher": "1031022",
   "repository": {
     "type": "git",
@@ -12,7 +12,27 @@
     "vscode": "^1.74.0"
   },
   "categories": [
-    "Other"
+    "AI"
+  ],
+  "keywords": [
+    "cli",
+    "claude",
+    "claude cli",
+    "claude code",
+    "claude-cli",
+    "claude-code",
+    "claude-diff-editable",
+    "droid",
+    "droid ai",
+    "droid-cli",
+    "droid-diff-editable",
+    "gemini cli",
+    "gemini code",
+    "gemini-cli",
+    "gemini-diff-editable",
+    "ide companion",
+    "ide integration",
+    "keybindings"
   ],
   "icon": "icon.png",
   "activationEvents": [
