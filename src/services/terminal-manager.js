@@ -77,10 +77,15 @@ function findAITerminal() {
  * @returns {Promise<vscode.Terminal>} Created terminal
  */
 async function startAICLI(cliConfig) {
-    // Create a new terminal
+    // Get extension path for icon
+    const extensionPath = require('path').join(__dirname, '..', '..');
+    const iconPath = require('path').join(extensionPath, 'icon.png');
+    
+    // Create a new terminal with custom icon
     const terminal = vscode.window.createTerminal({
         name: cliConfig.terminalName,
-        hideFromUser: false
+        hideFromUser: false,
+        iconPath: vscode.Uri.file(iconPath)
     });
 
     // Track this terminal
